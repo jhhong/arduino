@@ -12,13 +12,9 @@ void setup()
 
 void loop()   /*----( LOOP: RUNS CONSTANTLY )----*/
 {
-  lprint("Hello!","Arduino in Life!",2000);
-  lprint("I'm leader Isaac","This is LCD Test",3000);
-  lprint("Turn off light","wait minutes...",3000);  
-  lcd.noBacklight();
-  delay(2000);
-  lcd.backlight();  
-  lprint("Turn on light","welcome back",3000);    
+  lprint("I Love LeeSukMin","michi!",2000);
+  lprint("& BAND iOS team",",too!",2000);  
+  lprint("Coffee please","^^;;",2000);    
 }
 
 void lprint(char *str1, char*str2,int waitTime) {
