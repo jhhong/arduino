@@ -11,9 +11,9 @@ A1핀에 가변저항을 길게해서 연결하고 아날로그 입력을 받아
 
 [motor 방향]
      1
-  4     3
+  3     4
      2
-(1,2 : 반 시계방향 회전/ 3,4 : 시계방향 회전)
+(1,2 :시계방향 회전/ 3,4 : 반 시계방향 회전)
 
 [핀번호]
 모터1 : D3 (490Hz)
@@ -29,12 +29,16 @@ GY-86 SDA : A4
 //////////////////////////////////////////////////////////////////////
 ///                           PID                                  ///
 //////////////////////////////////////////////////////////////////////
+#include <math.h>
+#include <Wire.h>
 #include <PID_v1.h>
-double gap = 2; //오차각도가 gap 보다 작을 때와 클 때 PID 게인을 다르게 주기 위해 추가한 부분, 실험적으로 몇 도가 좋은지 찾아내야 함.
-double consKp=5, consKi=0.01, consKd=1; //오차가 gap보다 작을 때 PID게인 (이 값을 실험으로 찾는 것이 주요 포인트)
-double aggKp=1, aggKi=0.01, aggKd=0.5; //오차가 gap보다 클 때 PID게인 (이 값을 실험으로 찾는 것이 주요 포인트)
+#include <Servo.h>
 
-double Setpoint_X, Input_X, Output_X, //setpoint : 목표값(기체가 0도를 유지해야 하므로 0)
+double gap = 2; //오차각도가 gap 보다 작을 때와 클 때 PID 게인을 다르게 주기 위해 추가한 부분, 실험적으로 몇 도가 좋은지 찾아내야 함.
+double consKp=0.2 , consKi=0.00, consKd=0.0; //오차가 gap보다 작을 때 PID게인 (이 값을 실험으로 찾는 것이 주요 포인트)
+//double aggKp=3, aggKi=0.01, aggKd=0.5; //오차가 gap보다 클 때 PID게인 (이 값을 실험으로 찾는 것이 주요 포인트)
+
+double Setpoint_X, Input_X, Output_X, //setpoint : 목표값(기체가 0도를 유지해야 하 므로 0)
        Setpoint_Y, Input_Y, Output_Y, 
        Setpoint_Z, Input_Z, Output_Z;
 
@@ -50,8 +54,7 @@ float standard_1, standard_2, standard_3, standard_4 = 0; //모터 기본 출력
 //////////////////////////////////////////////////////////////////////
 ///                           sensor                               ///
 //////////////////////////////////////////////////////////////////////
-#include <math.h> // (no semicolon)
-#include <Wire.h>
+
 
 /* MPU-6050 sensor */
 #define MPU6050_ACCEL_XOUT_H 0x3B // R
@@ -61,7 +64,6 @@ float standard_1, standard_2, standard_3, standard_4 = 0; //모터 기본 출력
 #define MPU6050_I2C_ADDRESS 0x68
 float Degree_X, Degree_Y, Degree_Z;
 float offset_X, offset_Y;
-float offset_tmp_X, offset_tmp_Y;
 
 //LPF
 #define MPU6050_CONFIG 0x1A 
@@ -138,7 +140,6 @@ unsigned long curSensoredTime = 0;
 ///                             MOTOR                              ///
 //////////////////////////////////////////////////////////////////////
 //PWM신호를 만드는 것을 서보모터 제어 헤더파일을 사용했습니다.
-#include <Servo.h> 
 Servo motor_1, motor_2, motor_3, motor_4;
 
 float Speed_Motor_1 = 0, //기본 회전속도
@@ -213,32 +214,18 @@ void setup()
 	Setpoint_X, Setpoint_Y = 0; //, Setpoint_Z = 0;
 
 	//turn the PID on
-	myPID_X.SetMode(AUTOMATIC);  myPID_Y.SetMode(AUTOMATIC);  //myPID_Z.SetMode(AUTOMATIC);
+	myPID_X.SetMode(AUTOMATIC);  
+        myPID_Y.SetMode(AUTOMATIC);  
+        //myPID_Z.SetMode(AUTOMATIC);
 
 } //setup
 
 void loop()
 {   
+//  int start = millis();
+  
         digitalWrite(12,HIGH);//비행가능 led 점등
 	sensor(); //센서함수 호출
-
-        //센서를 수평으로 놓아도 0도가 되지 않기 때문에 아래부분을 추가하였습니다.
-        //처음 켰을 때 수평에서 시작해야 합니다. 그래야 옵셋오차를 계산하여 빼줍니다.
-	//loop가 10번 돌았을 때  부터 20번 돌 때 까지의 오차값의 평균을 구합니다.
-
-        int Loop = 0;
-	if(Loop < 22) 
-          Loop++; 
-	else if ( (Loop>9)&&(Loop<21) )//10번 째 루프부터 10번 옵셋 오차의 누적합을 구합니다.
-        { 
-		offset_tmp_X += Degree_X; 
-		offset_tmp_Y += Degree_Y;
-	}
-	else if(Loop ==21)
-        {
-		offset_X = offset_tmp_X/10;
-		offset_Y = offset_tmp_Y/10;
-	}
 
 //////////////////////////////////////////////////////////////////////
 ///                        loop PID                                ///
@@ -250,15 +237,15 @@ void loop()
         double gap_X = Setpoint_X - Input_X;
         double gap_Y = Setpoint_Y - Input_Y;
  
-        if (gap_X < gap) //오차각도가 작을때의 PID게인 설정
-          myPID_X.SetTunings(consKp, consKi, consKd);
-        else //오차각도가 클 때의 PID게인 설정
-           myPID_X.SetTunings(aggKp, aggKi, aggKd); 
+//        if (gap_X < gap) //오차각도가 작을때의 PID게인 설정
+//          myPID_X.SetTunings(consKp, consKi, consKd);
+//        else //오차각도가 클 때의 PID게인 설정
+//           myPID_X.SetTunings(aggKp, aggKi, aggKd); 
              
-        if(gap_Y < gap)
-           myPID_Y.SetTunings(consKp, consKi, consKd);
-        else
-           myPID_Y.SetTunings(aggKp, aggKi, aggKd); 
+//        if(gap_Y < gap)
+//           myPID_Y.SetTunings(consKp, consKi, consKd);
+//        else
+//           myPID_Y.SetTunings(aggKp, aggKi, aggKd); 
 
 	myPID_X.Compute(); //PID 계산 수행
 	myPID_Y.Compute(); 
@@ -268,45 +255,39 @@ void loop()
 ///                       loop  MOTOR                              ///
 //////////////////////////////////////////////////////////////////////
         // map함수: 0~255까지의 입력을 0부터swing값 까지 매핑해줌
-	float M1 = map(Output_X,0,255,0,swing)/10.00, 
-	      M2 = map(Output_X,0,255,0,swing)/10.00,
-              M3 = map(Output_Y,0,255,0,swing)/10.00, 
-              M4 = map(Output_Y,0,255,0,swing)/10.00;
+	float M1 = map(Output_Y,0,255,0,swing)/10.00, 
+	      M2 = map(Output_Y,0,255,0,swing)/10.00,
+              M3 = map(Output_X,0,255,0,swing)/10.00, 
+              M4 = map(Output_X,0,255,0,swing)/10.00;
 
-	if(  Degree_X < 0 && Degree_Y < 0 ) // -, -
+	if(  Degree_X < 0 ) // Left is more higher
 	{     
-		Speed_Motor_1 = standard_1 + ( M1 );      
-		Speed_Motor_2 = standard_2 - ( M2 );
-		Speed_Motor_3 = standard_3 + ( M3 );
-		Speed_Motor_4 = standard_4 - ( M4 );
+		Speed_Motor_3 = standard_3 - ( M3 );
+		Speed_Motor_4 = standard_4 + ( M4 );
 	}
 
-	else if(  Degree_X > 0 && Degree_Y > 0 ) // +, +
+	else // Right is more higher
 	{    
-		Speed_Motor_1 = standard_1 - ( M1 );      
-		Speed_Motor_2 = standard_2 + ( M2 );
-		Speed_Motor_3 = standard_3 - ( M3 );
-		Speed_Motor_4 = standard_4 + ( M4 );
-	}
-
-	else if(  Degree_X > 0 && Degree_Y < 0 ) // +, -
-	{     
-		Speed_Motor_1 = standard_1 - ( M1 );      
-		Speed_Motor_2 = standard_2 + ( M2 );
 		Speed_Motor_3 = standard_3 + ( M3 );
 		Speed_Motor_4 = standard_4 - ( M4 );
 	}
 
-	else if(  Degree_X < 0 && Degree_Y > 0 ) // -, +
-	{      
+	if(Degree_Y < 0 ) // Below is higher 
+	{     
 		Speed_Motor_1 = standard_1 + ( M1 );      
 		Speed_Motor_2 = standard_2 - ( M2 );
-		Speed_Motor_3 = standard_3 - ( M3 );
-		Speed_Motor_4 = standard_4 + ( M4 );
 	}
 
-        int thro = 0; //스로틀
-        thro = map(analogRead(1),0,1024,0,170);
+	else // Above is more higher
+	{      
+		Speed_Motor_1 = standard_1 - ( M1 );      
+		Speed_Motor_2 = standard_2 + ( M2 );
+	}
+
+        int thro = 50; //스로틀
+//        thro = map(analogRead(1),0,1024,0,170);
+        
+//	Serial.println(thro);
         
         //캘리브레이션이 안된 것인지 저는 3번 모터가 늦게 돌기 시작합니다. 
         //그래서 영점조절을 했습니다.
@@ -314,7 +295,7 @@ void loop()
         {
           standard_1 = 0;
           standard_2 = 0;
-          standard_3 = 22;
+          standard_3 = 0;
           standard_4 = 0;
         }
         else
@@ -326,32 +307,45 @@ void loop()
         }
  
 	//모터 출력
-	motor_1.write(Speed_Motor_1 + thro);
-	motor_2.write(Speed_Motor_2 + thro);  
+//	motor_1.write(Speed_Motor_1 + thro);
+//	motor_2.write(Speed_Motor_2 + thro);  
 	motor_3.write(Speed_Motor_3 + thro);
 	motor_4.write(Speed_Motor_4 + thro); 
 
 //////////////////////////////////////////////////////////////////////
 ///                       loop  Serial                             ///
 //////////////////////////////////////////////////////////////////////
+//
+//	Serial.print(thro); 
+//        Serial.print(F(" |\t"));//스로틀 값
+//
 
-	Serial.print(thro); Serial.print(F(" |\t"));//스로틀 값
 
-	Serial.print(F("Degree : ")); //기체 각도
-	Serial.print(Degree_X);  Serial.print(F(", "));
+	Serial.print(("Degree : ")); //기체 각도
+	Serial.print(Degree_X);  
+        Serial.print((", "));
 	Serial.print(Degree_Y);	  //Serial.print(F(", "));
-	//Serial.print(Degree_Z);	  
-	Serial.print(F(" |\t"));
+	Serial.print(Degree_Z);	  
+	Serial.print((" |\t"));
 
 	Serial.print("M1,M2 : "); //1,2번 모터 출력
-	Serial.print(Speed_Motor_1 + thro);  Serial.print(F(", "));
-	Serial.print(Speed_Motor_2 + thro);  Serial.print(F(" |\t"));
-
+	Serial.print(Speed_Motor_1 + thro);  
+        Serial.print((", "));
+	Serial.print(Speed_Motor_2 + thro);  
+        Serial.print((" |\t"));
+//
 	Serial.print("M3,M4 : "); //3,4번 모터 출력
-	Serial.print(Speed_Motor_3 + thro);  Serial.print(F(", "));
+	Serial.print(Speed_Motor_3 + thro);  
+        Serial.print((", "));
 	Serial.println(Speed_Motor_4 + thro);
+-
+	Serial.println(curSensoredTime - prevSensoredTime);
 	prevSensoredTime = curSensoredTime;
-
+//
+//      Serial.print(">>>>loop time>>>");
+//      Serial.println(millis() - start);
+//      Serial.println("<<<<loop time<<<");
+      
 }	// End of loop()
 
 

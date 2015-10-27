@@ -39,7 +39,10 @@ void sensor(){
 		float gx2=0, gy2=0, gz2 = 0;
 
 		int loopTime = curSensoredTime - prevSensoredTime;
-
+                
+//                Serial.print("loop time = ");
+//                Serial.println(loopTime);
+                
 		gx2 = angleInDegrees(lowX, highX, accel_t_gyro.value.x_gyro);
 		gy2 = angleInDegrees(lowY, highY, accel_t_gyro.value.y_gyro);
 		gz2 = angleInDegrees(lowZ, highZ, accel_t_gyro.value.z_gyro);
@@ -88,8 +91,10 @@ void sensor(){
 
 		}
                 // 삼각함수를 이용하여 각도 계산
-                Degree_X = Floor(atan2(gy1,gz1) * 57.2957786 - offset_X); //offset
-                Degree_Y = Floor(atan2(gx1,gz1) * 57.2957786 - offset_Y);   
+//              	Serial.print(F("offset_X : ")); //기체 각도
+//              	Serial.print(offset_X); //기체 각도
+                Degree_X = Floor(atan2(gx1,gz1) * 57.2957786 - offset_X); //offset
+                Degree_Y = Floor(atan2(gy1,gz1) * 57.2957786 - offset_Y);   
                 Degree_Z = gz1;
       }//end if 
 
