@@ -20,7 +20,6 @@ void setup() {
 
 void loop(){
 
-  ledOn();
   if (needLedOn) {
     ledOn();    
     delay(10000);    
@@ -45,12 +44,19 @@ void ledOff(){
 
 void wakeUpNow()        // here the interrupt is handled after wakeup
 {
+//    sleep_disable();         // first thing after waking from sleep:  
+//    detachInterrupt(0);      // disables interrupt 0 on pin 2 so the     
+//    dbgSerial.println("wake up");
     needLedOn = true;
-    dbgSerial.println("wake up");
 }
 
 void sleepNow()         // here we put the arduino to sleep
 {
+//    sleep_enable();
+//    attachInterrupt(0,wakeUpNow, HIGH); // use interrupt 0 (pin 2) and run function
+//    set_sleep_mode(SLEEP_MODE_PWR_DOWN);   // sleep mode is set here
+//    sleep_cpu();
+
     dbgSerial.println("Entering sleep mode");  
     set_sleep_mode(SLEEP_MODE_PWR_DOWN);   // sleep mode is set here
     sleep_enable();          // enables the sleep bit in the mcucr register
