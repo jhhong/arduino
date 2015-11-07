@@ -1,21 +1,21 @@
 #include <avr/sleep.h>
 #include <SoftwareSerial.h>
 
-int ledPin1 = 8;       // ledPin을 13번에 추가
-int ledPin2 = 9;       // ledPin을 13번에 추가
-int ledPin3 = 10;       // ledPin을 13번에 추가
+int ledPin1 = 3;       // ledPin을 13번에 추가
+int ledPin2 = 4;       // ledPin을 13번에 추가
+int ledPin3 = 5;       // ledPin을 13번에 추가
 int pirPin = 2;     // inputPin을 2번에 추가
 long startTime = 0;
 bool needLedOn = false;
 
-SoftwareSerial dbgSerial(0, 1); // RX, TX
+//SoftwareSerial dbgSerial(0, 1); // RX, TX
   
 void setup() {
   pinMode(pirPin, INPUT);    //inputPin을 입력모드로
   pinMode(ledPin1, OUTPUT);    //ledPin을 출력모드로
   pinMode(ledPin2, OUTPUT);    //ledPin을 출력모드로
   pinMode(ledPin3, OUTPUT);    //ledPin을 출력모드로  
-  dbgSerial.begin(9600);           //시리얼 통신을, 9600속도로 받습니다. ( 숫자 조정은 자유)
+//  dbgSerial.begin(9600);           //시리얼 통신을, 9600속도로 받습니다. ( 숫자 조정은 자유)
 }
 
 void loop(){
@@ -57,7 +57,7 @@ void sleepNow()         // here we put the arduino to sleep
 //    set_sleep_mode(SLEEP_MODE_PWR_DOWN);   // sleep mode is set here
 //    sleep_cpu();
 
-    dbgSerial.println("Entering sleep mode");  
+//    dbgSerial.println("Entering sleep mode");  
     set_sleep_mode(SLEEP_MODE_PWR_DOWN);   // sleep mode is set here
     sleep_enable();          // enables the sleep bit in the mcucr register
                              // so sleep is possible. just a safety pin 
