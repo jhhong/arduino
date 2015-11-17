@@ -1,5 +1,3 @@
-#include <Tone.h>
-
 const int buttonPins[] = {3,4,5,6,7,8,9,10};
 int buttonState[8];
 const int ledPin =  13;
