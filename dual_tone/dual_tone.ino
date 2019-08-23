@@ -1,79 +1,47 @@
 #include <Tone.h>
 
-int notes[] = 
-{
-  NOTE_A3,
-  NOTE_B3,
-  NOTE_C4,
-  NOTE_D4,
-  NOTE_E4,
-  NOTE_F4,
-  NOTE_G4,  
-};
+int buttonPin1 = 3;
+int buttonPin2 = 4;
+int buttonPin3 = 5;
 
-Tone notePlayer[2];
+int tonePins[] = {11,12,2};
+Tone tones[3];
 
 void setup()
 {
-  Serial.begin(9600);
-  notePlayer[0].begin(11);
-  notePlayer[1].begin(12);  
+  pinMode(buttonPin1,INPUT);
+  pinMode(buttonPin2,INPUT);  
+  pinMode(buttonPin3,INPUT);  
   
+  for (int i=0;i<3;i++) {
+    tones[i].begin(tonePins[i]);
+  }
 }
 
 void loop()
 {
+  int state1 = digitalRead(buttonPin1);
+  int state2 = digitalRead(buttonPin2);  
+  int state3 = digitalRead(buttonPin3);  
   
-     notePlayer[0].play(notes[2]);
-     notePlayer[1].play(notes[6]);     
-     notePlayer[0].stop();
-     notePlayer[1].stop();
-     delay(1000);     
-     notePlayer[0].play(notes[2]);
-     notePlayer[1].play(notes[6]);     
-     notePlayer[0].stop();
-     notePlayer[1].stop();
-     delay(1000);
-     
-     
-// char c;
-// 
-// if(Serial.available())
-// {
-//   c = Serial.read();
-//   
-//   switch(c)
-//   {
-//     case 'a'...'g':
-//     Serial.println("channel1");     
-//     notePlayer[0].play(notes[c - 'a']);
-//     Serial.println(notes[c - 'a']);
-//     break;
-//     
-//     case 's':
-//     notePlayer[0].stop();
-//     break;
-//     
-//     case 'A'...'G':
-//     Serial.println("channel2");     
-//     notePlayer[1].play(notes[c - 'A']);
-//     Serial.println(notes[c - 'A']);     
-//     break;
-//     
-//     case 'S':
-//     notePlayer[1].stop();
-//     break;
-//     
-//     default:
-//     Serial.println("default");
-//     notePlayer[1].stop();
-//     notePlayer[0].play(NOTE_B4);
-//     delay(300);
-//     notePlayer[0].stop();     
-//     delay(100);
-//     notePlayer[1].play(NOTE_B4);
-//     delay(300);     
-//     notePlayer[1].stop();    
-//     break;
-     
-   }
+  // assign by first visit.
+  int toneIndex = 0;
+  
+  if (state1 == HIGH) {
+    tone[toneIndex].play(NOTE_C4);
+  } else {
+    tone1.stop();    
+  }
+
+  if (state2 == HIGH) {
+    tone1.play(NOTE_E4);      
+  } else {
+    tone1.stop();
+  }
+
+  if (state3 == HIGH) {
+    tone3.play(NOTE_G4);      
+  } else {
+    tone3.stop();
+  }
+ }
