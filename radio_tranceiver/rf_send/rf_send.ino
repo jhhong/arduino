@@ -10,7 +10,7 @@ void setup() {
   Serial.begin(115200);
   radio.begin();
 //  radio.disableDynamicPayloads();
-//  radio.setAutoAck(false);
+  radio.setAutoAck(false); //false로 하지 않으면 정상동작 하지 않음.
   radio.openWritingPipe(address); //이전에 설정한 5글자 문자열인 데이터를 보낼 수신의 주소를 설정
   radio.setPALevel(RF24_PA_MIN); //전원공급에 관한 파워레벨을 설정합니다. 모듈 사이가 가까우면 최소로 설정합니다.
 //거리가 가까운 순으로 RF24_PA_MIN / RF24_PA_LOW / RF24_PA_HIGH / RF24_PA_MAX 등으로 설정할 수 있습니다.
