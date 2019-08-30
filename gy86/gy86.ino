@@ -75,7 +75,10 @@ void loop() {
   gyro_angle_x = angle_x + dt*gyro_x;
   gyro_angle_y = angle_y + dt*gyro_y;
  
-  //상보필터
+  //상보필터 angle = 0.98 * (prev_angle + gyrData * dt) + 0.02 * accData
+  //angle은 출력할 각도, gyrData는 자이로값, dt는 적분할 시간, accData는 가속도를 이용한 각도 데이터입니다. angle이 2개가 있는데 오른쪽에 있는 angle은 이전 각도값을 의미합니다. 이 각도값은 매번 업데이트됩니다.
+  //위 공식에서 angle은 각도값(deg)이며 gyrData는 각속도(deg / sec), dt는 시간, accData는 각도(deg) 입니다. 서로 단위가 다르면 더할 수 없기에 단위를 통일해 주어야 합니다. 그렇기에 자이로값에 적분할 시간을 곱해주어 각도로 단위를 통일해준 후 더하는 것입니다.
+  
   angle_x = 0.95*gyro_angle_x + 0.05*accel_x;
   angle_y = 0.95*gyro_angle_y + 0.05*accel_y;
  
