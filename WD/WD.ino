@@ -18,11 +18,7 @@
 
 int sn = PB0;
 int sw = PB3;
-int i = 0;
-int l = 0;
-int b = 0;
-int t = 0;
-int WDC = 3;
+int t = 1;
 long WDPI = 1500000;
 
 void setup() {
@@ -35,7 +31,7 @@ void setup() {
 
 void loop() {
   sleep();
-  check();
+  waitInput();
 }
 
 void sleep() {
@@ -57,65 +53,40 @@ ISR(PCINT0_vect)
 {
 }
 
-void check() {
-  for (i = 0; i <= 30000; i++) {
+void waitInput() {
+  for (int i = 0; i <= 30000; i++) {
     if (digitalRead(sw) == 1) {
       delayMicroseconds(300);
     } else {
-      PUSH();
-    }
-  }
-}
-
-
-void PUSH() {
-  for (i = 0; i <= 5000; i++) {
-    if (digitalRead(sw) == 0) {
-      b = 1;
-      delayMicroseconds(100);
-    } else {
-      if (b == 1) {
-        playSound();
-      }
-      b = 0;
-    }
-  }
-  scream();
-}
-
-void scream() {
-  for (i = 0; i <= 9; i++) {
-    if (digitalRead(sw) == 1) {
-      delayMicroseconds(100);
+      playSound();
     }
   }
 }
 
 void playSound() {
 
-  if (t % 1 == 0) {
+  if (t % 10 == 1) {
     WDSO1();
-  }   else if (t % 2 == 0) {
+  }   else if (t % 10 == 2) {
     WDSO2();
-  }   else if (t % 3 == 0) {
+  }   else if (t % 10 == 3) {
     WDSO3();
-  }   else if (t % 4 == 0) {
+  }   else if (t % 10 == 4) {
     WDSO4();
-  }   else if (t % 5 == 0) {
+  }   else if (t % 10 == 5) {
     WDSO5();
-  }   else if (t % 6 == 0) {
+  }   else if (t % 10 == 6) {
     WDSO6();
-  }   else if (t % 7 == 0) {
+  }   else if (t % 10 == 7) {
     WDSO7();
-  }   else if (t % 8 == 0) {
+  }   else if (t % 10 == 8) {
     WDSO8();
-  }   else if (t % 9 == 0) {
+  }   else if (t % 10 == 9) {
     WDSO9();
   }   else if (t % 10 == 0) {
     WDS10();
   }
   delay(200);
-  l++;
   t++;
 }
 
@@ -161,6 +132,7 @@ void WDSO2() {
   buzz(C7, 500);
 }
 
+//울면안되
 void WDSO3() {
   buzz(E7, 125);
   buzz(F7, 125);
@@ -188,6 +160,7 @@ void WDSO3() {
   buzz(C7, 500);
 }
 
+//
 void WDSO4() {
   buzz(C6, 125);
   buzz(C6, 125);
@@ -205,6 +178,7 @@ void WDSO4() {
   buzz(C6, 250);
 }
 
+//are u sleepy are u sleepy brother john
 void WDSO5() {
   buzz(C6, 250);
   buzz(D6, 250);
@@ -222,6 +196,7 @@ void WDSO5() {
   buzz(G6, 500);
 }
 
+//happy birthday to u
 void WDSO6() {
   buzz(G6, 125);
   buzz(G6, 125);
@@ -250,6 +225,7 @@ void WDSO6() {
   buzz(C7, 500);
 }
 
+//리리릿자로 끝나는 말
 void WDSO7() {
   buzz(C7, 250);
   buzz(C7, 250);
@@ -276,6 +252,7 @@ void WDSO7() {
   buzz(C7, 500);
 }
 
+//
 void WDSO8() {
   buzz(G6, 250);
   buzz(A6, 250);
@@ -292,6 +269,7 @@ void WDSO8() {
   buzz(G6, 500);
 }
 
+//bingo
 void WDSO9() {
   buzz(G6, 125);
   buzz(C7, 125);
@@ -331,6 +309,7 @@ void WDSO9() {
   buzz(C7, 500);
 }
 
+//
 void WDS10() {
   buzz(C7, 500);
   buzz(C8, 500);
