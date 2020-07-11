@@ -7,7 +7,7 @@ const int switchPin = PB3; // switch
 
 int counter = 0;
 int start = 0;
-int displayTimeout = 10; //sec
+int displayTimeout = 60; //sec
 
 byte dec_digits[] = {
   0b11001111,  //1
