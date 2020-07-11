@@ -8,13 +8,15 @@ const int switchPin = PB3; // switch
 int counter = 0;
 
 byte dec_digits[] = {
-  0b10111111,  //1
-  0b11011111,  //2
-  0b11101111,  //3
-  0b11110111,  //4
-  0b11111011,  //5
-  0b11111101,  //6
-  0b11111110  //7
+  0b11001111,  //1
+  0b10010010,  //2
+  0b10000110,  //3
+  0b11001100,  //4
+  0b10100100,  //5
+  0b10100000,  //6
+  0b10001101,  //7
+  0b10000000,  //8
+  0b10001100,  //9
 };
 
 void setup() {
@@ -50,7 +52,7 @@ void waitInput() {
 
 void showNumber() {
 
-  for (int i = 0; i < 7; i++) {
+  for (int i = 0; i < 9; i++) {
     digitalWrite(latchPin, LOW); // shift out the bits  :
     shiftOut(dataPin, clockPin, LSBFIRST, dec_digits[i]); //take the latch pin high so the LEDs will light up:
     digitalWrite(latchPin, HIGH); // pause before next value:
