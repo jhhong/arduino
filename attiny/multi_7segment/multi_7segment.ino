@@ -6,6 +6,8 @@ const int clockPin = PB2;  // 74HC595의 clock(SH_CP) 핀을 연결
 const int switchPin = PB3; // switch
 
 int counter = 0;
+int start = 0;
+int displayTimeout = 10; //sec
 
 byte dec_digits[] = {
   0b11001111,  //1
@@ -19,12 +21,19 @@ byte dec_digits[] = {
   0b10001100,  //9
 };
 
+long day = 86400000; // 86400000 milliseconds in a day
+long hour = 3600000; // 3600000 milliseconds in an hour
+long minute = 60000; // 60000 milliseconds in a minute
+long second =  1000; // 1000 milliseconds in a second
+
 void setup() {
   //set pins to output so you can control the shift register
   pinMode(latchPin, OUTPUT);
   pinMode(clockPin, OUTPUT);
   pinMode(dataPin, OUTPUT);
   pinMode(switchPin, INPUT_PULLUP);
+
+  start = millis();
 
   //need ?
   GIMSK = 0b00100000;
@@ -34,6 +43,14 @@ void setup() {
 void loop() {
   sleep();
   waitInput();
+
+  //
+  int diff = millis() - start;
+  int seconds = (((diff % day) % hour) % minute) / second;
+
+  if (second > displayTimeout) {
+    displayOff();
+  }
 }
 
 void waitInput() {
@@ -53,8 +70,9 @@ void showNumber() {
   shiftOut(dataPin, clockPin, LSBFIRST, dec_digits[index]); //take the latch pin high so the LEDs will light up:
   digitalWrite(latchPin, HIGH); // pause before next value:
   counter++;
+  start = millis();
 
-  delay(500);
+  delay(300);
 }
 
 void displayOff() {
