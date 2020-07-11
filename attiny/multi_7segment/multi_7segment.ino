@@ -1,4 +1,4 @@
-#include <avr/sleep.h>#include <avr/sleep.h>
+#include <avr/sleep.h>
 
 const int dataPin = PB0;   // 74HC595의 data(DS) 핀을 연결
 const int latchPin = PB1;  // 74HC595의 latch(ST_CP) 핀을 연결
@@ -6,7 +6,7 @@ const int clockPin = PB2;  // 74HC595의 clock(SH_CP) 핀을 연결
 const int switchPin = PB3; // switch
 
 int counter = 0;
-int start = 0;
+unsigned long start = 0;
 int displayTimeout = 60; //sec
 
 byte dec_digits[] = {
@@ -45,8 +45,8 @@ void loop() {
   waitInput();
 
   //
-  int diff = millis() - start;
-  int seconds = (((diff % day) % hour) % minute) / second;
+  unsigned long diff = millis() - start;
+  int seconds = (int) (diff / second);
 
   if (second > displayTimeout) {
     displayOff();
