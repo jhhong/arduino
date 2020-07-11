@@ -35,9 +35,8 @@ void loop() {
 
   //  int count = sizeof(dec_digits) / sizeof(dec_digits[0]);
 
-  //  sleep();
-  //  waitInput();
-  showNumber();
+    sleep();
+    waitInput();
 }
 
 void waitInput() {
@@ -52,12 +51,19 @@ void waitInput() {
 
 void showNumber() {
 
-  for (int i = 0; i < 9; i++) {
+    int index = counter % 9; // 0~8
     digitalWrite(latchPin, LOW); // shift out the bits  :
-    shiftOut(dataPin, clockPin, LSBFIRST, dec_digits[i]); //take the latch pin high so the LEDs will light up:
+    shiftOut(dataPin, clockPin, LSBFIRST, dec_digits[index]); //take the latch pin high so the LEDs will light up:
     digitalWrite(latchPin, HIGH); // pause before next value:
+    counter++;
+
     delay(500);
-  }
+}
+
+void displayOff() {
+    digitalWrite(latchPin, LOW); // shift out the bits  :
+    shiftOut(dataPin, clockPin, LSBFIRST, 0x11111111); //take the latch pin high so the LEDs will light up:
+    digitalWrite(latchPin, HIGH); // pause before next value:  
 }
 
 void sleep() {
