@@ -10,7 +10,8 @@ byte dec_digits[] = {
   0b10100100,  //5
   0b10100000,  //6
   0b10001101,  //7
-  0b11111111   //8
+  0b11111111,  //8
+  0b11110011   //9
 };
 
 void setup() {
@@ -24,7 +25,7 @@ void loop() {
 
   //  int count = sizeof(dec_digits) / sizeof(dec_digits[0]);
 
-  for (int i = 0; i < 7; i++) {
+  for (int i = 0; i < 9; i++) {
     digitalWrite(latchPin, LOW); // shift out the bits  :
     shiftOut(dataPin, clockPin, MSBFIRST, 0b11000000); //take the latch pin high so the LEDs will light up:
     digitalWrite(latchPin, HIGH); // pause before next value:
