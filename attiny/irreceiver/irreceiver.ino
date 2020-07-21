@@ -46,8 +46,10 @@ if(flag){
 
 void ledOn(){
   digitalWrite(LED_PIN,HIGH);
+  delay(500);
 }
 
 void ledOff(){
   digitalWrite(LED_PIN,LOW);
+  delay(500);
 }
