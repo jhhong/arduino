@@ -11,8 +11,8 @@ void setup() {
   pinMode(SWITCH_PIN, INPUT_PULLUP);
 
   //must need set
-  GIMSK = 0b00100000;
-  PCMSK = 0b00001000;
+  GIMSK = 0b00100000; //외부인터럽트 0b01000000  핀체인지 인터럽트 0b00100000
+  PCMSK = 0b00001000; //Pin Change Mask Register. 어떤핀을 사용할지 선택. (폴링엣지에서 ISR호출됨)
 }
 
 void loop() {
