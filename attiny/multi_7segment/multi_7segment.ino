@@ -4,12 +4,15 @@ const int dataPin = PB0;   // 74HC595의 data(DS) 핀을 연결
 const int latchPin = PB1;  // 74HC595의 latch(ST_CP) 핀을 연결
 const int clockPin = PB2;  // 74HC595의 clock(SH_CP) 핀을 연결
 const int switchPin = PB3; // switch
+const int tensPlacePin = PB4; // 10의 자리. position. 19 -> 1. 35 ->3
 
-int counter = 0;
+int counter = 1;
 unsigned long start = 0;
 int displayTimeout = 60; //sec
 
-byte dec_digits[] = {
+//1의 자리
+byte digits_one[] = {
+  0b10000001,  //0
   0b11001111,  //1
   0b10010010,  //2
   0b10000110,  //3
@@ -19,6 +22,20 @@ byte dec_digits[] = {
   0b10001101,  //7
   0b10000000,  //8
   0b10001100,  //9
+};
+
+//10의 자리
+byte digits_ten[] = {
+  0b00000001,  //0
+  0b01001111,  //1
+  0b00010010,  //2
+  0b00000110,  //3
+  0b01001100,  //4
+  0b00100100,  //5
+  0b00100000,  //6
+  0b00001101,  //7
+  0b00000000,  //8
+  0b00001100,  //9
 };
 
 long day = 86400000; // 86400000 milliseconds in a day
@@ -32,6 +49,7 @@ void setup() {
   pinMode(clockPin, OUTPUT);
   pinMode(dataPin, OUTPUT);
   pinMode(switchPin, INPUT_PULLUP);
+  pinMode(tensPlacePin, OUTPUT);
 
   start = millis();
 
@@ -65,14 +83,38 @@ void waitInput() {
 
 void showNumber() {
 
-  int index = counter % 9; // 0~8
-  digitalWrite(latchPin, LOW); // shift out the bits  :
-  shiftOut(dataPin, clockPin, LSBFIRST, dec_digits[index]); //take the latch pin high so the LEDs will light up:
-  digitalWrite(latchPin, HIGH); // pause before next value:
-  counter++;
-  start = millis();
+  if (counter >= 100) {
+    counter = 1;
+  }
 
+  int tensPlace = counter / 10;  // 1~9
+  int unitsPlace = counter % 10; // 0~9
+
+  showNumberOfTen(tensPlace);
+  showNumberOfOne(unitsPlace);
+
+  start = millis();
+  counter++;
+}
+
+//1의 자리
+void showNumberOfOne(int n) {
+  digitalWrite(latchPin, LOW); // shift out the bits  :
+  shiftOut(dataPin, clockPin, LSBFIRST, digits_one[n]); //take the latch pin high so the LEDs will light up:
+  digitalWrite(latchPin, HIGH); // pause before next value:
   delay(300);
+}
+
+//10의 자리
+void showNumberOfTen(int n) {
+
+  if ( n > 0) {
+    digitalWrite(tensPlacePin, HIGH);
+    digitalWrite(latchPin, LOW); // shift out the bits  :
+    shiftOut(dataPin, clockPin, LSBFIRST, digits_ten[n]); //take the latch pin high so the LEDs will light up:
+    digitalWrite(latchPin, HIGH); // pause before next value:
+    delay(300);
+  }
 }
 
 void displayOff() {
