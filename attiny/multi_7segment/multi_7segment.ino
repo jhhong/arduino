@@ -8,6 +8,7 @@ const int tensPlacePin = PB4; // 10의 자리. position. 19 -> 1. 35 ->3
 
 int counter = 1;
 bool pushBlock = false;
+bool sleepMode = false;
 unsigned long pushBlockTime = 0; //push 버튼 여러번 눌리지 않도록 체크
 int displayTimeout = 30000; //30 sec
 int pushBlockTimeout = 300; //0.3 sec
@@ -54,9 +55,11 @@ void setup() {
 }
 
 void loop() {
-  //  sleep();
   waitInput();
-  showNumber();
+
+  if (!sleepMode) {
+    showNumber();
+  }
 
   if (canExecutable(pushBlockTime, pushBlockTimeout)) {
     pushBlock = false;
@@ -64,6 +67,8 @@ void loop() {
 
   if (canExecutable(pushBlockTime, displayTimeout)) {
     displayOff();
+    sleepMode = true;
+    sleep();
   }
 }
 
@@ -140,4 +145,5 @@ void sleep() {
 
 ISR(PCINT0_vect)
 {
+  sleepMode = false;
 }
