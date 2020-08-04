@@ -7,8 +7,10 @@ const int switchPin = PB3; // switch
 const int tensPlacePin = PB4; // 10의 자리. position. 19 -> 1. 35 ->3
 
 int counter = 1;
-unsigned long start = 0;
-int displayTimeout = 60; //sec
+bool pushBlock = false;
+unsigned long pushBlockTime = 0; //push 버튼 여러번 눌리지 않도록 체크
+int displayTimeout = 30000; //30 sec
+int pushBlockTimeout = 300; //0.3 sec
 
 //1의 자리
 byte digits_one[] = {
@@ -38,11 +40,6 @@ byte digits_ten[] = {
   0b00001100,  //9
 };
 
-long day = 86400000; // 86400000 milliseconds in a day
-long hour = 3600000; // 3600000 milliseconds in an hour
-long minute = 60000; // 60000 milliseconds in a minute
-long second =  1000; // 1000 milliseconds in a second
-
 void setup() {
   //set pins to output so you can control the shift register
   pinMode(latchPin, OUTPUT);
@@ -51,33 +48,35 @@ void setup() {
   pinMode(switchPin, INPUT_PULLUP);
   pinMode(tensPlacePin, OUTPUT);
 
-  start = millis();
-
-  //need ?
+  //interrupt setting
   GIMSK = 0b00100000;
   PCMSK = 0b00001000;
 }
 
 void loop() {
-  sleep();
+  //  sleep();
   waitInput();
+  showNumber();
 
-  //
-  unsigned long diff = millis() - start;
-  int seconds = (int) (diff / second);
+  if (canExecutable(pushBlockTime, pushBlockTimeout)) {
+    pushBlock = false;
+  }
 
-  if (second > displayTimeout) {
+  if (canExecutable(pushBlockTime, displayTimeout)) {
     displayOff();
   }
 }
 
+bool canExecutable(unsigned long startTime, int limit) {
+  unsigned long diff = millis() - startTime;
+  return diff > limit ? true : false;
+}
+
 void waitInput() {
-  for (int i = 0; i <= 30000; i++) {
-    if (digitalRead(switchPin) == 1) {
-      delayMicroseconds(300);
-    } else {
-      showNumber();
-    }
+  if (digitalRead(switchPin) == 0 && !pushBlock) {
+    pushBlock = true;
+    pushBlockTime = millis();
+    counter++;
   }
 }
 
@@ -92,17 +91,15 @@ void showNumber() {
 
   showNumberOfTen(tensPlace);
   showNumberOfOne(unitsPlace);
-
-  start = millis();
-  counter++;
 }
 
 //1의 자리
 void showNumberOfOne(int n) {
+  digitalWrite(tensPlacePin, LOW);
   digitalWrite(latchPin, LOW); // shift out the bits  :
   shiftOut(dataPin, clockPin, LSBFIRST, digits_one[n]); //take the latch pin high so the LEDs will light up:
   digitalWrite(latchPin, HIGH); // pause before next value:
-  delay(300);
+  delay(10);
 }
 
 //10의 자리
@@ -113,14 +110,17 @@ void showNumberOfTen(int n) {
     digitalWrite(latchPin, LOW); // shift out the bits  :
     shiftOut(dataPin, clockPin, LSBFIRST, digits_ten[n]); //take the latch pin high so the LEDs will light up:
     digitalWrite(latchPin, HIGH); // pause before next value:
-    delay(300);
+    delay(10);
   }
 }
 
 void displayOff() {
+
   digitalWrite(latchPin, LOW); // shift out the bits  :
   shiftOut(dataPin, clockPin, LSBFIRST, 0x11111111); //take the latch pin high so the LEDs will light up:
   digitalWrite(latchPin, HIGH); // pause before next value:
+
+  digitalWrite(tensPlacePin, LOW);
 }
 
 void sleep() {
