@@ -5,6 +5,7 @@
 
 #define UP_BUTTON 2
 #define DOWN_BUTTON 3
+#define POTENTIOMETER A5
 
 // Color definitions
 #define BLACK           0x0000
@@ -112,16 +113,18 @@ uint8_t player_y = 16;
 
 void setup() {
   
-    pinMode(UP_BUTTON, INPUT_PULLUP);
-    pinMode(DOWN_BUTTON, INPUT_PULLUP);
+//    pinMode(UP_BUTTON, INPUT_PULLUP);
+//    pinMode(DOWN_BUTTON, INPUT_PULLUP);
+
+    Serial.begin(115200);
     display.begin();
     display.fillScreen(BLACK);
     display.drawBitmap(3,0,pong,89,24,GREEN);
     display.drawBitmap(10,30,game,75,26,RED);
-    while(digitalRead(UP_BUTTON) == HIGH && digitalRead(DOWN_BUTTON) == HIGH)  
-  {
-    delay(100);
-  }
+//    while(digitalRead(UP_BUTTON) == HIGH && digitalRead(DOWN_BUTTON) == HIGH)  
+//  {
+    delay(1000);
+//  }
     unsigned long start = millis();
 
     
@@ -135,14 +138,25 @@ void setup() {
     ball_y = random(3,63);
 }
 
+int getPo() {
+    int poVal = analogRead(POTENTIOMETER);
+    int poValPercent = map(poVal,0,1024,0,63 - PADDLE_HEIGHT);  
+
+    Serial.print(poValPercent);
+    
+    return poValPercent;
+}
+
 void loop() {
 
     unsigned long time = millis();    
     static bool up_state = false;
     static bool down_state = false;
     
-    up_state |= (digitalRead(UP_BUTTON) == LOW);
-    down_state |= (digitalRead(DOWN_BUTTON) == LOW);
+//    up_state |= (getPo() > 50);
+//    down_state |= (getPo() <= 50);
+
+    Serial.println(getPo());
 
     if(resetBall)
     {
@@ -240,13 +254,15 @@ void loop() {
 
         // Player paddle
         display.drawFastVLine(PLAYER_X, player_y,PADDLE_HEIGHT, BLACK);
-        if(up_state) {
-            player_y -= 1;
-        }
-        if(down_state) {
-            player_y += 1;
-        }
-        up_state = down_state = false;
+//        if(up_state) {
+//            player_y -= 1;
+//        }
+//        if(down_state) {
+//            player_y += 1;
+//        }
+
+        player_y = getPo();
+//        up_state = down_state = false;
         if(player_y < 1) player_y = 1;
         if(player_y + PADDLE_HEIGHT > 63) player_y = 63 - PADDLE_HEIGHT;
         display.drawFastVLine(PLAYER_X, player_y, PADDLE_HEIGHT, GREEN);
@@ -338,4 +354,3 @@ paddle_update = ball_update;
 gameIsRunning = true;
 resetBall=true;
 }
-
