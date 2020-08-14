@@ -37,7 +37,6 @@ if(flag){
 }
 
   if (irrecv.decode(&results)) {
-//    Serial.println(results.value, HEX);
     flag = !flag;
     irrecv.resume(); // Receive the next value
   }
@@ -46,10 +45,8 @@ if(flag){
 
 void ledOn(){
   digitalWrite(LED_PIN,HIGH);
-  delay(500);
 }
 
 void ledOff(){
   digitalWrite(LED_PIN,LOW);
-  delay(500);
 }

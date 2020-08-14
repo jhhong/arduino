@@ -4,6 +4,11 @@
 // IMPORTANT: IRsend only works from PB4 ("pin 4" according to Arduino)
 int LED_PIN = PB0;
 int SWITCH_PIN = PB3;
+
+bool pushBlock = false;
+unsigned long pushBlockTime = 0; //push 버튼 여러번 눌리지 않도록 체크
+int pushBlockTimeout = 200; //0.3 sec
+
 IRsend irsend;
 
 void setup() {
@@ -18,6 +23,15 @@ void setup() {
 void loop() {
   sleep();
   waitInput();
+
+  if (canExecutable(pushBlockTime, pushBlockTimeout)) {
+    pushBlock = false;
+  }
+}
+
+bool canExecutable(unsigned long startTime, int limit) {
+  unsigned long diff = millis() - startTime;
+  return diff > limit ? true : false;
 }
 
 void sendSignal() {
@@ -27,9 +41,8 @@ void sendSignal() {
 
 void blink() {
   digitalWrite(LED_PIN, HIGH);
-  delay(500);
+  delay(200);
   digitalWrite(LED_PIN, LOW);
-  delay(500);
 }
 
 void sleep() {
@@ -52,15 +65,12 @@ ISR(PCINT0_vect)
 }
 
 void waitInput() {
-  for (int i = 0; i <= 30000; i++) {
-    if (digitalRead(SWITCH_PIN) == 1) {
-      delayMicroseconds(300);
-    } else {
-      sendSignal();
-    }
+  if (digitalRead(SWITCH_PIN) == 0 && !pushBlock) {
+    pushBlock = true;
+    pushBlockTime = millis();
+    sendSignal();
   }
 }
-
 
 //  void sendNEC(unsigned long data, int nbits);
 //  void sendSony(unsigned long data, int nbits);
