@@ -107,6 +107,7 @@ const int CRASHSOUNDDURATION = 250;
 
 const char *INTRO1 = "  Game Start  ";
 const int INTRODELAY = 2000;
+unsigned long now = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -117,12 +118,14 @@ void setup() {
 }
 
 void loop() {
-  unsigned long now = millis() - INTRODELAY;
+
   if (!crash) {
     getSteeringWheel();
     crash = (car_pos == road[road_index]);
   }
   if (crash) {
+
+    unsigned long elapsedTime = millis() - now;
 
     if (!crashtime) {
       crashtime = now;
@@ -132,7 +135,7 @@ void loop() {
       lcd.setCursor(3, 0);
       lcd.print("  FINISH  ");
       lcd.setCursor(2, 1);
-      lcd.print(now / 1000);
+      lcd.print(elapsedTime / 1000);
       lcd.print("seconds  ");
     }
     if ((now - crashtime) < CRASHSOUNDDURATION) {
@@ -219,4 +222,6 @@ void reset() {
   lcd.setCursor(2, 0);
   lcd.print(INTRO1);
   delay(INTRODELAY);
+
+  now = millis() - INTRODELAY;
 }
