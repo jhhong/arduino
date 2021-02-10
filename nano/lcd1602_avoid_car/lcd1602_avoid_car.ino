@@ -1,19 +1,19 @@
 #include <Wire.h> // WIRE 라이브러리 추가
 #include <LiquidCrystal_I2C.h>
 
-//#include <LiquidCrystal.h> //LCD 라이브러리 추가
-//LiquidCrystal lcd(12,11,5,4,3,2); // 12,11,5,4,3,2 핀에 LCD 연결
 LiquidCrystal_I2C lcd(0x3F, 16, 2);
+
 const int UpPIN = 2; //상향버튼 7PIN에 입력
 const int DownPIN = 4; // 하향 번튼 8PIN에 입력
 const int MAXPOT = 800; // 1023까지 돌릴 필요 없이 800까지 가능
 const int RANDSEEDPIN = 0; //초기화
-const int MAXSTEPDURATION = 400; 
-const int MINSTEPDURATION = 10; 
+const int MAXSTEPDURATION = 400;
+const int MINSTEPDURATION = 10;
 const int NGLYPHS = 6;
+
 //주의할 점은 glyphs 는 1부터 시작하여 정의
 byte glyphs[NGLYPHS][8] = {
-//사용자의 차가 1,3차선에 있을 때
+  //사용자의 차가 1,3차선에 있을 때
   { B00000,
     B01110,
     B11111,
@@ -34,7 +34,7 @@ byte glyphs[NGLYPHS][8] = {
     B01010,
     B00000
   }
- //피해야 하는 차들이 1,3 차선에서 올 때
+  //피해야 하는 차들이 1,3 차선에서 올 때
   , {
     B00000,
     B01110,
@@ -45,7 +45,7 @@ byte glyphs[NGLYPHS][8] = {
     B00000,
     B00000
   }
-//피해야 하는 차들이 2,4 차선에서 올때
+  //피해야 하는 차들이 2,4 차선에서 올때
   , {
     B00000,
     B00000,
@@ -101,52 +101,34 @@ int car_pos = 0;
 const int MAXROADPOS = 3 * NCARPOSITIONS;
 int step_duration;
 
-int crash; 
+int crash;
 unsigned int crashtime;  // 충돌할때까지 걸린 시간 (초단위)
 const int CRASHSOUNDDURATION = 250;
 
 const char *INTRO1 = "  Game Start  ";
 const int INTRODELAY = 2000;
 
-void setup(){
+void setup() {
   Serial.begin(9600);
   pinMode(UpPIN, INPUT_PULLUP);
   pinMode(DownPIN, INPUT_PULLUP);
-//  lcd.begin(16,2);
-  lcd.begin();
-  lcd.clear();
-   crash = crashtime = road_index = 0;
-  step_duration = MAXSTEPDURATION;
-  line_buff[1 + ROADLEN] = '\0'; // NULL 종료
-  randomSeed(analogRead(RANDSEEDPIN));
-  for (int i = 0; i < NGLYPHS; i++) {
-    lcd.createChar(i + 1, glyphs[i]);
-  }
-  for (int i = 0; i < ROADLEN; i++) {
-    road[i] = -1;
-  }
-  
-  
-  getSteeringWheel();
-  drawRoad();
 
-  lcd.setCursor(2, 0);
-  lcd.print(INTRO1);
-  delay(INTRODELAY);
+  reset();
 }
-void loop(){
+
+void loop() {
   unsigned long now = millis() - INTRODELAY;
   if (!crash) {
     getSteeringWheel();
     crash = (car_pos == road[road_index]);
   }
-if (crash) {
-  
+  if (crash) {
+
     if (!crashtime) {
       crashtime = now;
       drawRoad();
-     // FINISH 문자열
-     // 충돌한 열의 상태를 그대로 유지
+      // FINISH 문자열
+      // 충돌한 열의 상태를 그대로 유지
       lcd.setCursor(3, 0);
       lcd.print("  FINISH  ");
       lcd.setCursor(2, 1);
@@ -154,44 +136,49 @@ if (crash) {
       lcd.print("seconds  ");
     }
     if ((now - crashtime) < CRASHSOUNDDURATION) {
-      
+
     }
-    
-    delay(10); 
+
+    //다시 시작
+    if (digitalRead(UpPIN) == LOW || digitalRead(DownPIN) == LOW) {
+      reset();
+    }
+
+    delay(10);
   }
   else {
 
     int prev_pos = road[(road_index - 1) % ROADLEN];
     int this_pos = random(MAXROADPOS);
-    while (abs(this_pos - prev_pos) < 2) { 
+    while (abs(this_pos - prev_pos) < 2) {
       this_pos = random(MAXROADPOS);
     }
     road[road_index] = this_pos;
     road_index = (road_index + 1) % ROADLEN;
     drawRoad();
-  
+
     delay(step_duration);
-   
+
     if (step_duration > MINSTEPDURATION) {
-      step_duration--; 
+      step_duration--;
     }
   }
 }
 
 void getSteeringWheel() {
   if (digitalRead(UpPIN) == LOW) {
- if (car_pos > 0) {
-  
+    if (car_pos > 0) {
+
       car_pos = car_pos - 1;
-    
- }
+
+    }
   }
   if (digitalRead(DownPIN) == LOW) {
-    
-   if (car_pos < 3) {
-      car_pos = car_pos +1;
+
+    if (car_pos < 3) {
+      car_pos = car_pos + 1;
     }
-    }
+  }
 }
 
 void drawRoad() {
@@ -209,4 +196,27 @@ void drawRoad() {
     lcd.setCursor(0, i);
     lcd.print(line_buff);
   }
+}
+
+void reset() {
+  lcd.begin();
+  lcd.clear();
+  crash = crashtime = road_index = 0;
+  step_duration = MAXSTEPDURATION;
+  line_buff[1 + ROADLEN] = '\0'; // NULL 종료
+  randomSeed(analogRead(RANDSEEDPIN));
+  for (int i = 0; i < NGLYPHS; i++) {
+    lcd.createChar(i + 1, glyphs[i]);
+  }
+  for (int i = 0; i < ROADLEN; i++) {
+    road[i] = -1;
+  }
+
+
+  getSteeringWheel();
+  drawRoad();
+
+  lcd.setCursor(2, 0);
+  lcd.print(INTRO1);
+  delay(INTRODELAY);
 }
