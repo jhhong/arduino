@@ -113,12 +113,15 @@ void setup() {
   Serial.begin(9600);
   pinMode(UpPIN, INPUT_PULLUP);
   pinMode(DownPIN, INPUT_PULLUP);
+  pinMode(LED_BUILTIN, OUTPUT);
 
   reset();
 }
 
 void loop() {
 
+  digitalWrite(LED_BUILTIN, HIGH);
+  
   if (!crash) {
     getSteeringWheel();
     crash = (car_pos == road[road_index]);
