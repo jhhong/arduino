@@ -31,6 +31,8 @@
 #include <Adafruit_ST7735.h>
 #include <SPI.h>
 
+#define PUSH_BUTTON       2     // PUSH BUTTON
+
 // initialize Sainsmart 1.8" TFT screen
 // (connect pins accordingly or change these values)
 #define TFT_DC            9     // Sainsmart RS/DC
@@ -127,7 +129,7 @@ static short tmpx, tmpy;
 void setup() {
   // initialize the push button on pin 2 as an input
   // DDRD &= ~(1<<PD2);
-  pinMode(2, INPUT_PULLUP);
+  pinMode(PUSH_BUTTON, INPUT_PULLUP);
   // initialize a ST7735S chip, black tab
   TFT.initR(INITR_BLACKTAB);
 }
