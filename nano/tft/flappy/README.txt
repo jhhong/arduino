@@ -1,14 +1,12 @@
-Adafruit_GFX
-Adafruit_ST7735
+src/Adafruit_GFX
+src/Adafruit_ST7735
 
 두개 디렉토리는 라이브러리 이다.
 
-아래와 같이 복사해 두어야 한다. 
-Adafruit_GFX
-Adafruit_ST7735
-최신에서는 정상 동작이 되지 않으므로 반드시 본 디렉토리의 라이브러리를 사용해야 한다.
+원래는 Library Manager를 통해 추가가 되어야 하지만
 
-해당 디렉토리가 이미 있는 경우 기존디렉토리를 다른곳으로 잠시 옮겨두고 아래와 같이 복사해 둔다.
+동일명의 호환이 되지 않은 이전 버전으로 추정되어 (버전을 알수 없음)
 
-/Users/naver/Documents/Arduino/libraries/Adafruit_GFX
-/Users/naver/Documents/Arduino/libraries/Adafruit_ST7735
+Sketch 디렉토리에 커스텀 라이브러리 형태로 추가를 해두었다.
+
+src 디렉토리 하위에 반드시 존재하여야 컴파일러에서 recursive 하게 찾을수 있다.

@@ -27,8 +27,8 @@
 //
 // =============================================================================
 
-#include <Adafruit_GFX.h>
-#include <Adafruit_ST7735.h>
+#include "src/Adafruit_GFX/Adafruit_GFX.h"
+#include "src/Adafruit_ST7735/Adafruit_ST7735.h"
 #include <SPI.h>
 
 #define PUSH_BUTTON       2     // PUSH BUTTON

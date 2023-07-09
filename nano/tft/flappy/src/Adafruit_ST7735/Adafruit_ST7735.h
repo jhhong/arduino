@@ -26,7 +26,7 @@
  #include "WProgram.h"
 #endif
 
-#include <Adafruit_GFX.h>
+#include "../Adafruit_GFX/Adafruit_GFX.h"
 
 #if defined(__SAM3X8E__)
 #include <include/pio.h>
