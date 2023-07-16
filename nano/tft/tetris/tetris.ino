@@ -1,5 +1,5 @@
 #include <SPI.h>
-#include <SD.h>
+// #include <SD.h>
 #include "src/Adafruit_GFX/Adafruit_GFX.h"
 #include "src/Adafruit_ST7735/Adafruit_ST7735.h"
 
@@ -89,18 +89,18 @@ void waitForClick() {
   }
 }
 
-void saveScore() {
-  if (!saveScores) {
-    return;
-  }
+// void saveScore() {
+//   if (!saveScores) {
+//     return;
+//   }
 
-  File f = SD.open(FILE_NAME, FILE_WRITE);
-  if (f) {
-    f.println(score);
-    f.close();
-    Serial.println("Saved score.");
-  }
-}
+//   File f = SD.open(FILE_NAME, FILE_WRITE);
+//   if (f) {
+//     f.println(score);
+//     f.close();
+//     Serial.println("Saved score.");
+//   }
+// }
 
 void gameOver() {
   tft.setCursor(GAMEOVER_X, GAMEOVER_Y);
@@ -108,7 +108,7 @@ void gameOver() {
   tft.setCursor(GAMEOVER_X, GAMEOVER_Y + 10);
   tft.print("OVER");
 
-  saveScore();
+  // saveScore();
   waitForClick();
 
   tft.fillRect(90, 20, 25, 20, COLOR_BLACK);
@@ -401,22 +401,22 @@ void setup() {
   Serial.begin(9600);
   while (!Serial);
 
-  if (!SD.begin(SD_CS)) {
-    Serial.println("SD init failed!");
-    return;
-  }
+  // if (!SD.begin(SD_CS)) {
+  //   Serial.println("SD init failed!");
+  //   return;
+  // }
 
 
-  if (!SD.exists(FILE_NAME)) {
-    File f = SD.open(FILE_NAME, FILE_WRITE);
-    f.close();
-  }
+  // if (!SD.exists(FILE_NAME)) {
+  //   File f = SD.open(FILE_NAME, FILE_WRITE);
+  //   f.close();
+  // }
 
-  if (!SD.exists(FILE_NAME)) {
-    Serial.print("Couldn't access file on SD card: ");
-    Serial.println(FILE_NAME);
-    saveScores = false;
-  }
+  // if (!SD.exists(FILE_NAME)) {
+  //   Serial.print("Couldn't access file on SD card: ");
+  //   Serial.println(FILE_NAME);
+  //   saveScores = false;
+  // }
 
   pinMode(JOY_BTN, INPUT_PULLUP);
   pinMode(JOY_X, INPUT);
