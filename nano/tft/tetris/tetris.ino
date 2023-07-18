@@ -34,6 +34,7 @@ uint16_t getCurrentShapeColor() {
   return shapeColors[currentShape];
 }
 
+//블록 1개를 특정 색으로 칠하기.
 void fillBlock(byte x, byte y, uint16_t color) {
   grid[x][y] = color;
   tft.fillRect(1 + BOARD_OFFSET_X + (x * BLOCK_SIZE), 1 + BOARD_OFFSET_Y + (y * BLOCK_SIZE), BLOCK_SIZE - 1, BLOCK_SIZE - 1, color);
@@ -163,6 +164,7 @@ void detectCurrentShapeCollision() {
   }
 }
 
+//한줄이 다 채워졌는지 확인. 동일 row 중 모든 col 블록중 하나라도 검정이면 다 채워지지 않음.
 void checkForTetris() {
   bool foundScore = false;
   byte rowsPastFirstMatching = 0;
