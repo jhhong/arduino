@@ -104,6 +104,9 @@ void waitForClick() {
 // }
 
 void gameOver() {
+  
+  tft.setTextSize(1);
+  tft.setTextColor(COLOR_WHITE);
   tft.setCursor(GAMEOVER_X, GAMEOVER_Y);
   tft.print("GAME");
   tft.setCursor(GAMEOVER_X, GAMEOVER_Y + 10);
@@ -350,7 +353,7 @@ void joystickMovement() {
   static bool hasClicked = false;
 
   // left
-  if (joyX < 490 && xOffset > 0 && (now - lastMove) > (MOVE_DELAY + (joyX < 10 ? 0 : MOVE_DELAY * 5))) {
+  if (joyX > 520 && xOffset > 0 && (now - lastMove) > (MOVE_DELAY + (joyX > 1015 ? 0 : MOVE_DELAY * 5))) {
     if (canMove(true)) {
       lastMove = now;
       xOffset--;
@@ -358,7 +361,7 @@ void joystickMovement() {
   }
 
   // right
-  if (joyX > 520 && xOffset < (BOARD_WIDTH - getShapeWidth()) && (now - lastMove) > (MOVE_DELAY + (joyX > 1015 ? 0 : MOVE_DELAY * 5))) {
+  if (joyX < 490 && xOffset < (BOARD_WIDTH - getShapeWidth()) && (now - lastMove) > (MOVE_DELAY + (joyX < 10 ? 0 : MOVE_DELAY * 5))) {
     if (canMove(false)) {
       lastMove = now;
       xOffset++;
@@ -371,7 +374,7 @@ void joystickMovement() {
   }
 
   lastYoffset = yOffset;
-  if (joyY > 1000 && lastDown - now > DOWN_DELAY) {
+  if (joyY < 15 && lastDown - now > DOWN_DELAY) {
     stamp -= level;
     lastDown = now;
   }
