@@ -73,6 +73,8 @@ void nextShape() {
 
 void redrawScore() {
   tft.fillRect(SCORE_X, SCORE_Y + 10, 40, 10, COLOR_BLACK);
+  tft.setTextSize(1);
+  tft.setTextColor(COLOR_YELLOW);
   tft.setCursor(SCORE_X, SCORE_Y + 10);
   tft.print(score);
 }
