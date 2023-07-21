@@ -5,8 +5,8 @@
 #define TFTH2            80     // half screen height
 // game constant
 #define SPEED             1
-#define GRAVITY         9.8
-#define JUMP_FORCE     2.15
+#define GRAVITY         13
+#define JUMP_FORCE     1
 #define SKIP_TICKS     20.0     // 1000 / 50fps
 #define MAX_FRAMESKIP     5
 // bird size
