@@ -9,44 +9,44 @@ enum GameState {
 };
 
 long loops = 0;
-double current;
+long randNumber;
 
 GameState currentGame = FLAPPY_BIRD;
 
 void setup() {
+
+  randomSeed(analogRead(2));
+  randNumber =  random(1, 10);
 
   tft.initR(INITR_BLACKTAB);
   tft.fillScreen(COLOR_BLACK);
   pinMode(3, INPUT_PULLUP);
 
   Serial.begin(9600);
+  Serial.println(randNumber);
 
-  if(digitalRead(3) == HIGH) {
+  if(randNumber % 2 == 0) {
     currentGame = TETRIS;
+  } else {
+    currentGame = FLAPPY_BIRD;
   }
+
+  Serial.println(currentGame);
 
   if(currentGame == TETRIS) {
     setup_tetris();
   } else {
     setup_flappy();
   }
-
-  current = millis();
 }
 
 void loop() {
-  loops++;
+  
+  loops++; // do not remove.
 
   if(currentGame == TETRIS) {
     loop_tetris();
   } else {
     loop_flappy();
   }
-
-  // if(loops % 10000 == 0) {
-  //   Serial.println("loops=");
-  //   Serial.println(loops);
-  //   Serial.println((millis() - current)/1000);
-  //   current = millis();
-  // }
 }
