@@ -9,28 +9,53 @@ enum GameState {
 };
 
 long loops = 0;
-long randNumber;
+// long randNumber;
+unsigned short gameSelectYpos = (tft.height() / 2) - 30;
 
 GameState currentGame = FLAPPY_BIRD;
 
 void setup() {
 
-  randomSeed(analogRead(2));
-  randNumber =  random(1, 10);
+  // randomSeed(analogRead(2));
+  // randNumber =  random(1, 10);
 
   tft.initR(INITR_BLACKTAB);
   tft.fillScreen(COLOR_BLACK);
-  pinMode(3, INPUT_PULLUP);
+  pinMode(2, INPUT_PULLUP);
 
   Serial.begin(9600);
-  Serial.println(randNumber);
 
-  if(randNumber % 2 == 0) {
+  // if(randNumber % 2 == 0) {
+  //   currentGame = TETRIS;
+  // } else {
+  //   currentGame = FLAPPY_BIRD;
+  // }
+
+    centerWrite("TETRIS", gameSelectYpos, COLOR_YELLOW);
+    centerWrite("FLAPPY BIRD", gameSelectYpos + 10, COLOR_WHITE);
     currentGame = TETRIS;
-  } else {
-    currentGame = FLAPPY_BIRD;
+
+  while(true) {
+    int joyY = analogRead(JOY_Y);
+
+    if (joyY < 490 ) {
+      centerWrite("TETRIS", gameSelectYpos, COLOR_WHITE);
+      centerWrite("FLAPPY BIRD", gameSelectYpos + 10, COLOR_YELLOW);
+      currentGame = FLAPPY_BIRD;
+    }
+
+    if (joyY > 520) {
+      centerWrite("TETRIS", gameSelectYpos, COLOR_YELLOW);
+      centerWrite("FLAPPY BIRD", gameSelectYpos + 10, COLOR_WHITE);
+      currentGame = TETRIS;
+    }
+
+    if (digitalRead(JOY_BTN) == LOW) {
+      break;
+    }
   }
 
+  tft.fillScreen(COLOR_BLACK);
   Serial.println(currentGame);
 
   if(currentGame == TETRIS) {
