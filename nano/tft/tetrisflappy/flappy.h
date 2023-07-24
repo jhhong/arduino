@@ -1,4 +1,3 @@
-#define PUSH_BUTTON       2     // PUSH BUTTON
 #define TFTW            128     // screen width
 #define TFTH            160     // screen height
 #define TFTW2            64     // half screen width
@@ -301,7 +300,7 @@ void game_over() {
   tft.println("GAME OVER");
   tft.setTextSize(0);
   tft.setCursor( 10, TFTH2 - 14);
-  tft.print("scoreFlappy: ");
+  tft.print("score: ");
   tft.print(scoreFlappy);
   tft.setCursor( TFTW2 - (12*3), TFTH2 + 12);
   tft.println("press button");

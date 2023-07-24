@@ -73,29 +73,16 @@ void redrawScore() {
 
 void waitForClick() {
   while (true) {
-    while (digitalRead(JOY_BTN) != LOW) {
+    while (digitalRead(PUSH_BUTTON) != LOW) {
       delay(100);
     }
 
     delay(50);
-    if (digitalRead(JOY_BTN) == LOW) {
+    if (digitalRead(PUSH_BUTTON) == LOW) {
       return;
     }
   }
 }
-
-// void saveScore() {
-//   if (!saveScores) {
-//     return;
-//   }
-
-//   File f = SD.open(FILE_NAME, FILE_WRITE);
-//   if (f) {
-//     f.println(score);
-//     f.close();
-//     Serial.println("Saved score.");
-//   }
-// }
 
 void gameOver() {
 
@@ -106,7 +93,6 @@ void gameOver() {
   tft.setCursor(GAMEOVER_X, GAMEOVER_Y + 10);
   tft.print("OVER");
 
-  // saveScore();
   waitForClick();
 
   tft.fillRect(90, 20, 25, 20, COLOR_BLACK);
@@ -374,10 +360,10 @@ void joystickMovement() {
   }
 
   // click
-  bool isClicked = (digitalRead(JOY_BTN) == LOW);
+  bool isClicked = (digitalRead(PUSH_BUTTON) == LOW);
   if (isClicked) {
     delay(50);
-    isClicked = (digitalRead(JOY_BTN) == LOW);
+    isClicked = (digitalRead(PUSH_BUTTON) == LOW);
   }
 
   hasClicked = hasClicked && isClicked;
@@ -394,7 +380,6 @@ void centerWrite(String text, byte yPos, uint16_t color) {
 }
 
 void setup_tetris() {
-  pinMode(JOY_BTN, INPUT_PULLUP);
   pinMode(JOY_X, INPUT);
   pinMode(JOY_Y, INPUT);
 
