@@ -319,7 +319,7 @@ void setup_flappy() {
   // DDRD &= ~(1<<PD2);
   pinMode(PUSH_BUTTON, INPUT_PULLUP);
   // initialize a ST7735S chip, black tab
-  tft.initR(INITR_BLACKTAB);
+  // tft.initR(INITR_BLACKTAB);
 }
 
 // ---------------

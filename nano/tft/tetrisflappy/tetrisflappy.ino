@@ -2,31 +2,51 @@
 #include "tetris.h"
 #include "flappy.h"
 
-String games[2] = {"tetris","flappy"};
-String game = games[0];
+// 상태 정의
+enum GameState {
+  TETRIS,
+  FLAPPY_BIRD
+};
+
+long loops = 0;
+double current;
+
+GameState currentGame = FLAPPY_BIRD;
 
 void setup() {
-  
-  randomSeed(analogRead(0));
-  game = games[random(0,2)];
 
   tft.initR(INITR_BLACKTAB);
   tft.fillScreen(COLOR_BLACK);
+  pinMode(3, INPUT_PULLUP);
 
   Serial.begin(9600);
 
-  if(game == "tetris") {
+  if(digitalRead(3) == HIGH) {
+    currentGame = TETRIS;
+  }
+
+  if(currentGame == TETRIS) {
     setup_tetris();
   } else {
     setup_flappy();
   }
+
+  current = millis();
 }
 
 void loop() {
+  loops++;
 
-  if(game == "tetris") {
+  if(currentGame == TETRIS) {
     loop_tetris();
   } else {
     loop_flappy();
   }
+
+  // if(loops % 10000 == 0) {
+  //   Serial.println("loops=");
+  //   Serial.println(loops);
+  //   Serial.println((millis() - current)/1000);
+  //   current = millis();
+  // }
 }
