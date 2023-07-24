@@ -23,6 +23,8 @@ void setup() {
 
   centerWrite("TETRIS", gameSelectYpos, COLOR_YELLOW);
   centerWrite("FLAPPY BIRD", gameSelectYpos + 10, COLOR_WHITE);
+  centerWrite("TANCHUN 2023", gameSelectYpos + 90, COLOR_WHITE);
+
   currentGame = TETRIS;
 
   while(true) {
