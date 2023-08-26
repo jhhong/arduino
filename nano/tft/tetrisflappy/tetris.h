@@ -333,7 +333,7 @@ void joystickMovement() {
   static bool hasClicked = false;
 
   // left
-  if (joyX > 520 && xOffset > 0 && (now - lastMove) > (MOVE_DELAY + (joyX > 1015 ? 0 : MOVE_DELAY * 5))) {
+  if (joyX > 550 && xOffset > 0 && (now - lastMove) > (MOVE_DELAY + (joyX > 1015 ? 0 : MOVE_DELAY * 5))) {
     if (canMove(true)) {
       lastMove = now;
       xOffset--;
@@ -341,7 +341,7 @@ void joystickMovement() {
   }
 
   // right
-  if (joyX < 490 && xOffset < (BOARD_WIDTH - getShapeWidth()) && (now - lastMove) > (MOVE_DELAY + (joyX < 10 ? 0 : MOVE_DELAY * 5))) {
+  if (joyX < 440 && xOffset < (BOARD_WIDTH - getShapeWidth()) && (now - lastMove) > (MOVE_DELAY + (joyX < 10 ? 0 : MOVE_DELAY * 5))) {
     if (canMove(false)) {
       lastMove = now;
       xOffset++;
