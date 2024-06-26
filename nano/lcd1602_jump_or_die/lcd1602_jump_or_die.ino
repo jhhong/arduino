@@ -10,7 +10,8 @@
 // GND - GND
 // VCC - 5V
 
-
+// Arduino-LiquidCrystal-I2C-library-master.zip
+// https://github.com/fdebrabander/Arduino-LiquidCrystal-I2C-library
 #include <LiquidCrystal_I2C.h>
 volatile int grasw;
 volatile int napis;
