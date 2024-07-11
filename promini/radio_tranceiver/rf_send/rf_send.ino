@@ -9,10 +9,12 @@ void setup() {
   printf_begin();
   Serial.begin(115200);
   radio.begin();
+  // radio.setChannel(100); // 0에서 125 사이의 채널 선택
+
 //  radio.disableDynamicPayloads();
   radio.setAutoAck(false); //false로 하지 않으면 정상동작 하지 않음.
   radio.openWritingPipe(address); //이전에 설정한 5글자 문자열인 데이터를 보낼 수신의 주소를 설정
-  radio.setPALevel(RF24_PA_MIN); //전원공급에 관한 파워레벨을 설정합니다. 모듈 사이가 가까우면 최소로 설정합니다.
+  radio.setPALevel(RF24_PA_MAX); //전원공급에 관한 파워레벨을 설정합니다. 모듈 사이가 가까우면 최소로 설정합니다.
 //거리가 가까운 순으로 RF24_PA_MIN / RF24_PA_LOW / RF24_PA_HIGH / RF24_PA_MAX 등으로 설정할 수 있습니다.
 //높은 레벨(거리가 먼 경우)은 작동하는 동안 안정적인 전압을 가지도록 GND와 3.3V에 바이패스 커패시터 사용을 권장함. 
   radio.stopListening();  //모듈을 송신기로 설정
