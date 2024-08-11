@@ -3,7 +3,7 @@ int currentSize = 0;
 
 struct KeyFrequencyMap {
   char key;
-  long frequency;
+  float frequency;
 };
 
 KeyFrequencyMap keyFrequencyMap[MAX_KEYS];
@@ -20,16 +20,13 @@ long WDPI = 1500000;
 int piezo = 8;
 
 void setup() {
-
-  Serial.begin(115200);
-
-  addKeyValue('C', 33); //32.7032
-  addKeyValue('D', 37); //36.7081
-  addKeyValue('E', 41); //41.2034
-  addKeyValue('F', 44); //43.6535
-  addKeyValue('G', 49); //48.9994
-  addKeyValue('A', 55); //55.0000
-  addKeyValue('B', 62); //61.7354
+  addKeyValue('C', 32.7032);
+  addKeyValue('D', 36.7081);
+  addKeyValue('E', 41.2034);
+  addKeyValue('F', 43.6535);
+  addKeyValue('G', 48.9994);
+  addKeyValue('A', 55.0000);
+  addKeyValue('B', 61.7354);
 
   pinMode(piezo, OUTPUT);
 
@@ -37,8 +34,8 @@ void setup() {
 }
 
 //C, 4
-long getFrequency(char key, int octave){
-  long frequency = 0;
+float getFrequency(char key, int octave){
+  float frequency = 0;
 
   for(int i = 0; i < MAX_KEYS; i++) {
     if(keyFrequencyMap[i].key == key){
@@ -47,16 +44,7 @@ long getFrequency(char key, int octave){
     }
   }
 
-  long octaveFrequency = frequency * pow(2, octave - 1);
-
-  Serial.print("key=");
-  Serial.println(key);
-  Serial.print("frequency=");
-  Serial.println(frequency);  
-  Serial.print("octave=");
-  Serial.println(octave);
-  Serial.print("octaveFrequency=");
-  Serial.println(octaveFrequency);
+  float octaveFrequency = frequency * pow(2, octave - 1);
 
   return octaveFrequency;
 }
@@ -122,7 +110,7 @@ buzz('C',7,500);
 }
 
 void buzz(char key, int octave , long length) {
-  long frequency = getFrequency(key, octave);
+  float frequency = getFrequency(key, octave);
 
   long delayValue = WDPI / frequency / 2; // calculate the delay value between transitions
   //// 1 second's worth of microseconds, divided by the frequency, then split in half since
