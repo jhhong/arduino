@@ -25,6 +25,14 @@ int t = 1;
 long WDPI = 1500000;
 
 void setup() {
+  addKeyValue('C', 32.7032);
+  addKeyValue('D', 36.7081);
+  addKeyValue('E', 41.2034);
+  addKeyValue('F', 43.6535);
+  addKeyValue('G', 48.9994);
+  addKeyValue('A', 55.0000);
+  addKeyValue('B', 61.7354);
+    
   pinMode(sw, INPUT_PULLUP);
   pinMode(sn, OUTPUT); // set a pin for buzzer output
 
