@@ -33,7 +33,7 @@ void setup() {
 }
 
 //C, 4
-float getFrequency(char key, int octave){
+float getFrequency(char key, int octave) {
   float frequency = 0;
 
   for(int i = 0; i < MAX_KEYS; i++) {
@@ -43,10 +43,13 @@ float getFrequency(char key, int octave){
     }
   }
 
-  float octaveFrequency = frequency * pow(2, octave - 1);
+  // pow(2, octave - 1) 대신 bit shift를 사용
+  float octaveMultiplier = 1 << (octave - 1);
+  float octaveFrequency = frequency * octaveMultiplier;
 
   return octaveFrequency;
 }
+
 
 void loop() {
   sleep();
