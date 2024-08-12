@@ -1,19 +1,24 @@
-#define MAX_KEYS 10
+#define MAX_KEYS 12
 
 #include <avr/sleep.h>
 
 int currentSize = 0;
 
+int qt = 250; 
+int db = qt * 2;
+int half = qt / 2;
+
 struct KeyFrequencyMap {
-  char key;
+  char key[3];  // 두 개의 문자와 null 종결자 '\0'을 위한 공간
   float frequency;
 };
 
 KeyFrequencyMap keyFrequencyMap[MAX_KEYS];
 
-void addKeyValue(char key, float value) {
+void addKeyValue(const char* key, float value) {
   if (currentSize < MAX_KEYS) {
-    keyFrequencyMap[currentSize].key = key;
+    strncpy(keyFrequencyMap[currentSize].key, key, 2); // 두 문자를 복사
+    keyFrequencyMap[currentSize].key[2] = '\0'; // null 종결자 추가
     keyFrequencyMap[currentSize].frequency = value;
     currentSize++;
   }
@@ -25,13 +30,18 @@ int t = 1;
 long WDPI = 1500000;
 
 void setup() {
-  addKeyValue('C', 32.7032);
-  addKeyValue('D', 36.7081);
-  addKeyValue('E', 41.2034);
-  addKeyValue('F', 43.6535);
-  addKeyValue('G', 48.9994);
-  addKeyValue('A', 55.0000);
-  addKeyValue('B', 61.7354);
+  addKeyValue("C", 32.7032);
+  addKeyValue("C#", 34.6478);
+  addKeyValue("D", 36.7081);
+  addKeyValue("D#", 38.8909);
+  addKeyValue("E", 41.2034);
+  addKeyValue("F", 43.6535);
+  addKeyValue("F#", 46.2493);
+  addKeyValue("G", 48.9994);
+  addKeyValue("G#", 51.9130);
+  addKeyValue("A", 55.0000);
+  addKeyValue("A#", 58.2705);
+  addKeyValue("B", 61.7354);
 
   pinMode(sw, INPUT_PULLUP);
   pinMode(sn, OUTPUT); // set a pin for buzzer output
@@ -41,11 +51,11 @@ void setup() {
 }
 
 //C, 4
-float getFrequency(char key, int octave) {
+float getFrequency(const char* key, int octave){
   float frequency = 0;
 
   for(int i = 0; i < MAX_KEYS; i++) {
-    if(keyFrequencyMap[i].key == key){
+    if(strcmp(keyFrequencyMap[i].key, key) == 0){
       frequency =  keyFrequencyMap[i].frequency;
       break;
     }
@@ -95,69 +105,107 @@ void waitInput() {
 
 void playSound() {
 
-  if (t % 10 == 1) {
-    HAPPY_BIRTHDAY_TO_YOU();
-  }   else if (t % 10 == 2) {
-    HAPPY_BIRTHDAY_TO_YOU();
-  }   else if (t % 10 == 3) {
-    HAPPY_BIRTHDAY_TO_YOU();
-  }   else if (t % 10 == 4) {
-    HAPPY_BIRTHDAY_TO_YOU();
-  }   else if (t % 10 == 5) {
-    HAPPY_BIRTHDAY_TO_YOU();
-  }   else if (t % 10 == 6) {
-    HAPPY_BIRTHDAY_TO_YOU();
-  }   else if (t % 10 == 7) {
-    HAPPY_BIRTHDAY_TO_YOU();
-  }   else if (t % 10 == 8) {
-    HAPPY_BIRTHDAY_TO_YOU();
-  }   else if (t % 10 == 9) {
-    HAPPY_BIRTHDAY_TO_YOU();
-  }   else if (t % 10 == 0) {
+  if (t % 2 == 0) {
+    storm_and_gale();
+  }   else if (t % 2 == 1) {
     HAPPY_BIRTHDAY_TO_YOU();
   }
+
   delay(200);
   t++;
 }
 
 //happy birthday to u
 void HAPPY_BIRTHDAY_TO_YOU() {
-      buzz('G',6,125);
-      buzz('G',6,125);
-      buzz('A',6,250);
-      buzz('G',6,250);
-      buzz('C',7,250);
-      buzz('B',6,500);
-      buzz('G',6,125);
-      buzz('G',6,125);
-      buzz('A',6,250);
-      buzz('G',6,250);
-      buzz('D',7,250);
-      buzz('C',7,500);
-      buzz('G',6,125);
-      buzz('G',6,125);
-      buzz('G',7,250);
-      buzz('E',7,250);
-      buzz('C',7,250);
-      buzz('B',6,250);
-      buzz('A',6,250);
-      buzz('F',7,125);
-      buzz('F',7,125);
-      buzz('E',7,250);
-      buzz('C',7,250);
-      buzz('D',7,250);
-      buzz('C',7,500);
+      buzz("G",6,125);
+      buzz("G",6,125);
+      buzz("A",6,250);
+      buzz("G",6,250);
+      buzz("C",7,250);
+      buzz("B",6,500);
+      buzz("G",6,125);
+      buzz("G",6,125);
+      buzz("A",6,250);
+      buzz("G",6,250);
+      buzz("D",7,250);
+      buzz("C",7,500);
+      buzz("G",6,125);
+      buzz("G",6,125);
+      buzz("G",7,250);
+      buzz("E",7,250);
+      buzz("C",7,250);
+      buzz("B",6,250);
+      buzz("A",6,250);
+      buzz("F",7,125);
+      buzz("F",7,125);
+      buzz("E",7,250);
+      buzz("C",7,250);
+      buzz("D",7,250);
+      buzz("C",7,500);
 }
 
-void buzz(char key, int octave , long length) {
+void storm_and_gale(){
+  buzz("G", 6,qt);
+  buzz("A", 6,qt);
+  buzz("B", 6,db);
+  buzz("C", 7,qt);
+  buzz("B", 6,half);
+  buzz("A", 6,db + half);
+  buzz("B", 6,qt);
+  buzz("A", 6,half);
+  buzz("G", 6,qt + half);
+  buzz("G", 6,qt);
+  buzz("G", 6,half);
+  buzz("A", 6,half);
+  buzz("B", 6,half);  
+  buzz("B", 6,db + half);    
+  buzz("E", 6,qt);    
+  buzz("F#",6,half);    
+  buzz("G", 6,qt + half);    
+  buzz("G", 6,qt);    
+  buzz("A", 6,qt);    
+  buzz("G", 6,half);    
+  buzz("F#",6,qt + half);    
+  buzz("F#",6,qt);    
+  buzz("E", 6,qt);    
+  buzz("D", 6,half);    
+  buzz("E", 6,db + db);
+
+  buzz("G", 6,qt);
+  buzz("A", 6,qt);
+  buzz("B", 6,db);
+  buzz("C", 7,qt);
+  buzz("B", 6,half);
+  buzz("A", 6,db + half);
+  buzz("B", 6,qt);
+  buzz("A", 6,half);
+  buzz("G", 6,qt + half);
+  buzz("G", 6,qt);
+  buzz("G", 6,half);
+  buzz("A", 6,half);
+  buzz("B", 6,half);  
+  buzz("B", 6,db + half);    
+  buzz("E", 6,qt);    
+  buzz("F#",6,half);    
+  buzz("G", 6,qt + half);    
+  buzz("G", 6,qt);    
+  buzz("A", 6,qt);    
+  buzz("G", 6,half);    
+  buzz("F#",6,db + half);    
+  buzz("B", 6,qt);    
+  buzz("B", 6,qt);    
+  buzz("A", 6,half);  
+  buzz("G", 6,db + db + qt + half);  
+  buzz("E", 6,qt);    
+  buzz("D", 6,qt);    
+  buzz("G", 6,db + db + qt + half);    
+}
+
+void buzz(const char* key, int octave , long length) {
   float frequency = getFrequency(key, octave);
 
   long delayValue = WDPI / frequency / 2; // calculate the delay value between transitions
-  //// 1 second's worth of microseconds, divided by the frequency, then split in half since
-  //// there are two phases to each cycle
   long numCycles = frequency * length / 1300; // calculate the number of cycles for proper timing
-  //// multiply frequency, which is really cycles per second, by the number of seconds to
-  //// get the total number of cycles to produce
   for (long i = 0; i < numCycles; i++) { // for the calculated length of time...
     digitalWrite(sn, HIGH); // write the buzzer pin high to push out the diaphram
     delayMicroseconds(delayValue); // wait for the calculated delay value
