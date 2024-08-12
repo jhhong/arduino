@@ -8,7 +8,7 @@ struct KeyFrequencyMap {
 
 KeyFrequencyMap keyFrequencyMap[MAX_KEYS];
 
-void addKeyValue(char key, int value) {
+void addKeyValue(char key, float value) {
   if (currentSize < MAX_KEYS) {
     keyFrequencyMap[currentSize].key = key;
     keyFrequencyMap[currentSize].frequency = value;
@@ -44,7 +44,9 @@ float getFrequency(char key, int octave){
     }
   }
 
-  float octaveFrequency = frequency * pow(2, octave - 1);
+  // pow(2, octave - 1) 대신 bit shift를 사용
+  float octaveMultiplier = 1 << (octave - 1);
+  float octaveFrequency = frequency * octaveMultiplier;
 
   return octaveFrequency;
 }

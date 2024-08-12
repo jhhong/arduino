@@ -11,7 +11,7 @@ struct KeyFrequencyMap {
 
 KeyFrequencyMap keyFrequencyMap[MAX_KEYS];
 
-void addKeyValue(char key, int value) {
+void addKeyValue(char key, float value) {
   if (currentSize < MAX_KEYS) {
     keyFrequencyMap[currentSize].key = key;
     keyFrequencyMap[currentSize].frequency = value;
@@ -32,7 +32,7 @@ void setup() {
   addKeyValue('G', 48.9994);
   addKeyValue('A', 55.0000);
   addKeyValue('B', 61.7354);
-    
+
   pinMode(sw, INPUT_PULLUP);
   pinMode(sn, OUTPUT); // set a pin for buzzer output
 
