@@ -1,6 +1,10 @@
 #define MAX_KEYS 12
 int currentSize = 0;
 
+int qt = 250; 
+int db = qt * 2;
+int half = qt / 2;
+
 struct KeyFrequencyMap {
   char key[3];  // 두 개의 문자와 null 종결자 '\0'을 위한 공간
   float frequency;
@@ -36,8 +40,9 @@ void setup() {
   
   pinMode(piezo, OUTPUT);
 
-  scale();
+  // scale();
   // HAPPY_BIRTHDAY_TO_YOU();
+  storm_and_gale();
 }
 
 float getFrequency(const char* key, int octave){
@@ -78,33 +83,90 @@ void scale(){
   buzz("C", 7,500);  
 }
 
+void storm_and_gale(){
+  buzz("G", 6,qt);
+  buzz("A", 6,qt);
+  buzz("B", 6,db);
+  buzz("C", 7,qt);
+  buzz("B", 6,half);
+  buzz("A", 6,db + half);
+  buzz("B", 6,qt);
+  buzz("A", 6,half);
+  buzz("G", 6,qt + half);
+  buzz("G", 6,qt);
+  buzz("G", 6,half);
+  buzz("A", 6,half);
+  buzz("B", 6,half);  
+  buzz("B", 6,db + half);    
+  buzz("E", 6,qt);    
+  buzz("F#",6,half);    
+  buzz("G", 6,qt + half);    
+  buzz("G", 6,qt);    
+  buzz("A", 6,qt);    
+  buzz("G", 6,half);    
+  buzz("F#",6,qt + half);    
+  buzz("F#",6,qt);    
+  buzz("E", 6,qt);    
+  buzz("D", 6,half);    
+  buzz("E", 6,db + db);
+
+  buzz("G", 6,qt);
+  buzz("A", 6,qt);
+  buzz("B", 6,db);
+  buzz("C", 7,qt);
+  buzz("B", 6,half);
+  buzz("A", 6,db + half);
+  buzz("B", 6,qt);
+  buzz("A", 6,half);
+  buzz("G", 6,qt + half);
+  buzz("G", 6,qt);
+  buzz("G", 6,half);
+  buzz("A", 6,half);
+  buzz("B", 6,half);  
+  buzz("B", 6,db + half);    
+  buzz("E", 6,qt);    
+  buzz("F#",6,half);    
+  buzz("G", 6,qt + half);    
+  buzz("G", 6,qt);    
+  buzz("A", 6,qt);    
+  buzz("G", 6,half);    
+  buzz("F#",6,db + half);    
+  buzz("B", 6,qt);    
+  buzz("B", 6,qt);    
+  buzz("A", 6,half);  
+  buzz("G", 6,db + db + qt + half);  
+  buzz("E", 6,qt);    
+  buzz("D", 6,qt);    
+  buzz("G", 6,db + db + qt + half);    
+}
+
 //happy birthday to u
 void HAPPY_BIRTHDAY_TO_YOU() {
-buzz("G",6,125);
-buzz("G",6,125);
-buzz("A",6,250);
-buzz("G",6,250);
-buzz("C",7,250);
-buzz("B",6,500);
-buzz("G",6,125);
-buzz("G",6,125);
-buzz("A",6,250);
-buzz("G",6,250);
-buzz("D",7,250);
-buzz("C",7,500);
-buzz("G",6,125);
-buzz("G",6,125);
-buzz("G",7,250);
-buzz("E",7,250);
-buzz("C",7,250);
-buzz("B",6,250);
-buzz("A",6,250);
-buzz("F",7,125);
-buzz("F",7,125);
-buzz("E",7,250);
-buzz("C",7,250);
-buzz("D",7,250);
-buzz("C",7,500);         
+  buzz("G",6,125);
+  buzz("G",6,125);
+  buzz("A",6,250);
+  buzz("G",6,250);
+  buzz("C",7,250);
+  buzz("B",6,500);
+  buzz("G",6,125);
+  buzz("G",6,125);
+  buzz("A",6,250);
+  buzz("G",6,250);
+  buzz("D",7,250);
+  buzz("C",7,500);
+  buzz("G",6,125);
+  buzz("G",6,125);
+  buzz("G",7,250);
+  buzz("E",7,250);
+  buzz("C",7,250);
+  buzz("B",6,250);
+  buzz("A",6,250);
+  buzz("F",7,125);
+  buzz("F",7,125);
+  buzz("E",7,250);
+  buzz("C",7,250);
+  buzz("D",7,250);
+  buzz("C",7,500);         
 }
 
 void buzz(const char* key, int octave , long length) {
