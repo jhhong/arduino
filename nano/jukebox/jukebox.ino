@@ -1,9 +1,17 @@
 #define MAX_KEYS 12
 int currentSize = 0;
 
-int qt = 250; 
-int db = qt * 2;
-int half = qt / 2;
+// WN = Whole Note 1
+// HN = Half Note 2
+// QN = Quarter Note 4
+// EN = Eight Note 8
+// SN = Sixteenth Note 16
+
+int QN = 250;
+int HN = QN * 2;
+int WN = HN * 2;
+int EN = QN / 2;
+int SN = EN / 2;
 
 struct KeyFrequencyMap {
   char key[3];  // 두 개의 문자와 null 종결자 '\0'을 위한 공간
@@ -68,105 +76,105 @@ void loop() {
 }
 
 void scale(){
-  buzz("C", 6,250);
-  buzz("C#",6,250);
-  buzz("D", 6,250);
-  buzz("D#",6,250);
-  buzz("E", 6,250);
-  buzz("F", 6,250);
-  buzz("F#",6,250);
-  buzz("G", 6,250);
-  buzz("G#",6,250);
-  buzz("A", 6,250);
-  buzz("A#",6,250);
-  buzz("B", 6,250);
-  buzz("C", 7,500);  
+  buzz("C", 6,QN);
+  buzz("C#",6,QN);
+  buzz("D", 6,QN);
+  buzz("D#",6,QN);
+  buzz("E", 6,QN);
+  buzz("F", 6,QN);
+  buzz("F#",6,QN);
+  buzz("G", 6,QN);
+  buzz("G#",6,QN);
+  buzz("A", 6,QN);
+  buzz("A#",6,QN);
+  buzz("B", 6,QN);
+  buzz("C", 7,WN);  
 }
 
 void storm_and_gale(){
-  buzz("G", 6,qt);
-  buzz("A", 6,qt);
-  buzz("B", 6,db);
-  buzz("C", 7,qt);
-  buzz("B", 6,half);
-  buzz("A", 6,db + half);
-  buzz("B", 6,qt);
-  buzz("A", 6,half);
-  buzz("G", 6,qt + half);
-  buzz("G", 6,qt);
-  buzz("G", 6,half);
-  buzz("A", 6,half);
-  buzz("B", 6,half);  
-  buzz("B", 6,db + half);    
-  buzz("E", 6,qt);    
-  buzz("F#",6,half);    
-  buzz("G", 6,qt + half);    
-  buzz("G", 6,qt);    
-  buzz("A", 6,qt);    
-  buzz("G", 6,half);    
-  buzz("F#",6,qt + half);    
-  buzz("F#",6,qt);    
-  buzz("E", 6,qt);    
-  buzz("D", 6,half);    
-  buzz("E", 6,db + db);
+  buzz("G", 6,QN);
+  buzz("A", 6,QN);
+  buzz("B", 6,HN);
+  buzz("C", 7,QN);
+  buzz("B", 6,EN);
+  buzz("A", 6,HN + EN);
+  buzz("B", 6,QN);
+  buzz("A", 6,EN);
+  buzz("G", 6,QN + EN);
+  buzz("G", 6,QN);
+  buzz("G", 6,EN);
+  buzz("A", 6,EN);
+  buzz("B", 6,EN);  
+  buzz("B", 6,HN + EN);    
+  buzz("E", 6,QN);    
+  buzz("F#",6,EN);    
+  buzz("G", 6,QN + EN);    
+  buzz("G", 6,QN);    
+  buzz("A", 6,QN);    
+  buzz("G", 6,EN);    
+  buzz("F#",6,QN + EN);    
+  buzz("F#",6,QN);    
+  buzz("E", 6,QN);    
+  buzz("D", 6,EN);    
+  buzz("E", 6,WN);
 
-  buzz("G", 6,qt);
-  buzz("A", 6,qt);
-  buzz("B", 6,db);
-  buzz("C", 7,qt);
-  buzz("B", 6,half);
-  buzz("A", 6,db + half);
-  buzz("B", 6,qt);
-  buzz("A", 6,half);
-  buzz("G", 6,qt + half);
-  buzz("G", 6,qt);
-  buzz("G", 6,half);
-  buzz("A", 6,half);
-  buzz("B", 6,half);  
-  buzz("B", 6,db + half);    
-  buzz("E", 6,qt);    
-  buzz("F#",6,half);    
-  buzz("G", 6,qt + half);    
-  buzz("G", 6,qt);    
-  buzz("A", 6,qt);    
-  buzz("G", 6,half);    
-  buzz("F#",6,db + half);    
-  buzz("B", 6,qt);    
-  buzz("B", 6,qt);    
-  buzz("A", 6,half);  
-  buzz("G", 6,db + db + qt + half);  
-  buzz("E", 6,qt);    
-  buzz("D", 6,qt);    
-  buzz("G", 6,db + db + qt + half);    
+  buzz("G", 6,QN);
+  buzz("A", 6,QN);
+  buzz("B", 6,HN);
+  buzz("C", 7,QN);
+  buzz("B", 6,EN);
+  buzz("A", 6,HN + EN);
+  buzz("B", 6,QN);
+  buzz("A", 6,EN);
+  buzz("G", 6,QN + EN);
+  buzz("G", 6,QN);
+  buzz("G", 6,EN);
+  buzz("A", 6,EN);
+  buzz("B", 6,EN);  
+  buzz("B", 6,HN + EN);    
+  buzz("E", 6,QN);    
+  buzz("F#",6,EN);    
+  buzz("G", 6,QN + EN);    
+  buzz("G", 6,QN);    
+  buzz("A", 6,QN);    
+  buzz("G", 6,EN);    
+  buzz("F#",6,HN + EN);    
+  buzz("B", 6,QN);    
+  buzz("B", 6,QN);    
+  buzz("A", 6,EN);  
+  buzz("G", 6,WN + QN + EN);  
+  buzz("E", 6,QN);    
+  buzz("D", 6,QN);    
+  buzz("G", 6,WN + QN + EN);    
 }
 
 //happy birthday to u
 void HAPPY_BIRTHDAY_TO_YOU() {
-  buzz("G",6,125);
-  buzz("G",6,125);
-  buzz("A",6,250);
-  buzz("G",6,250);
-  buzz("C",7,250);
-  buzz("B",6,500);
-  buzz("G",6,125);
-  buzz("G",6,125);
-  buzz("A",6,250);
-  buzz("G",6,250);
-  buzz("D",7,250);
-  buzz("C",7,500);
-  buzz("G",6,125);
-  buzz("G",6,125);
-  buzz("G",7,250);
-  buzz("E",7,250);
-  buzz("C",7,250);
-  buzz("B",6,250);
-  buzz("A",6,250);
-  buzz("F",7,125);
-  buzz("F",7,125);
-  buzz("E",7,250);
-  buzz("C",7,250);
-  buzz("D",7,250);
-  buzz("C",7,500);         
+  buzz("G",6,EN);
+  buzz("G",6,EN);
+  buzz("A",6,QN);
+  buzz("G",6,QN);
+  buzz("C",7,QN);
+  buzz("B",6,WN);
+  buzz("G",6,EN);
+  buzz("G",6,EN);
+  buzz("A",6,QN);
+  buzz("G",6,QN);
+  buzz("D",7,QN);
+  buzz("C",7,WN);
+  buzz("G",6,EN);
+  buzz("G",6,EN);
+  buzz("G",7,QN);
+  buzz("E",7,QN);
+  buzz("C",7,QN);
+  buzz("B",6,QN);
+  buzz("A",6,QN);
+  buzz("F",7,EN);
+  buzz("F",7,EN);
+  buzz("E",7,QN);
+  buzz("C",7,QN);
+  buzz("D",7,QN);
+  buzz("C",7,WN);         
 }
 
 void buzz(const char* key, int octave , long length) {
