@@ -31,6 +31,14 @@ void addKeyValue(const char* key, float value) {
   }
 }
 
+void changeSpeed(int speed){
+    QN = speed;
+    HN = QN * 2;
+    WN = HN * 2;
+    EN = QN / 2;
+    SN = EN / 2;  
+}
+
 int speakerPIN = PB0;
 int switchPIN = PB3;
 int t = 0;
@@ -112,10 +120,12 @@ void waitInput() {
 
 void playSound() {
 
-  if (t % 2 == 0) {
-    storm_and_gale();
-  } else if (t % 2 == 1) {
-    HAPPY_BIRTHDAY_TO_YOU();
+  if (t % 3 == 0) {
+    storm_and_gale(250);
+  } else if (t % 3 == 1) {
+    dream_of_octopus(350);
+  } else if (t % 3 == 2) {
+    HAPPY_BIRTHDAY_TO_YOU(250);
   }
 
   delay(200);
@@ -123,7 +133,9 @@ void playSound() {
 }
 
 //happy birthday to u
-void HAPPY_BIRTHDAY_TO_YOU() {
+void HAPPY_BIRTHDAY_TO_YOU(int speed){
+    changeSpeed(speed);
+
       buzz("G",6,EN);
       buzz("G",6,EN);
       buzz("A",6,QN);
@@ -152,7 +164,9 @@ void HAPPY_BIRTHDAY_TO_YOU() {
 }
 
 //질풍가도
-void storm_and_gale(){
+void storm_and_gale(int speed){
+    changeSpeed(speed);
+
       buzz("G", 6,QN);
       buzz("A", 6,QN);
       buzz("B", 6,HN);
@@ -207,6 +221,66 @@ void storm_and_gale(){
       buzz("E", 6,QN);    
       buzz("D", 6,QN);    
       buzz("G", 6,WN + QN + EN);
+}
+
+//문어의 꿈
+void dream_of_octopus(int speed){
+  changeSpeed(speed);
+  
+  buzz("D", 6,EN + SN);
+  buzz("C", 6,SN);
+  buzz("B", 5,EN + SN);
+  buzz("D", 6,HN + SN);
+  buzz("B", 5,EN + SN);
+  buzz("D", 6,QN);
+  buzz("B", 6,QN);
+  buzz("B", 6,SN);
+  buzz("A", 6,EN + SN);
+  buzz("G", 6,HN + QN + SN);
+  
+  buzz("A", 6,EN + SN);
+  buzz("G", 6,SN);
+  buzz("F#",6,QN);
+  buzz("D", 6,EN + SN);
+  buzz("D", 6,SN);
+  buzz("D", 6,EN + SN);
+  buzz("D", 6,SN);  
+  buzz("D", 6,EN + SN);
+  buzz("D", 6,QN);    
+  buzz("A", 5,QN + SN);    
+  buzz("D", 6,EN + SN);
+  buzz("A", 5,SN);  
+  buzz("C", 6,EN + SN);  
+  buzz("B", 5,QN);  
+  buzz("D", 6,WN);
+
+  buzz("D", 6,EN + SN);
+  buzz("C", 6,SN);
+  buzz("B", 5,EN + SN);
+  buzz("D", 6,HN + SN);
+  buzz("B", 5,EN + SN);
+  buzz("D", 6,QN);
+  buzz("B", 6,QN);
+  buzz("B", 6,SN);
+  buzz("A", 6,EN + SN);
+  buzz("G", 6,HN + QN);
+
+  buzz("A", 6,EN + SN);
+  buzz("G", 6,SN);
+  buzz("F#",6,QN);
+  buzz("D", 6,EN + SN);
+  buzz("D", 6,SN);
+  buzz("D", 6,EN + SN);
+  buzz("D", 6,SN);  
+  buzz("D", 6,EN + SN);
+  buzz("D", 6,QN);    
+  
+  buzz("B", 6,QN);    
+  buzz("B", 6,QN);
+  buzz("B", 6,QN);  
+  buzz("B", 6,SN);  
+  buzz("E", 6,EN + SN);  
+  buzz("G", 6,HN + QN);   
 }
 
 void buzz(const char* key, int octave , long length) {
