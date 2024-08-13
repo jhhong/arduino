@@ -1,12 +1,19 @@
-#define MAX_KEYS 12
-
 #include <avr/sleep.h>
 
+#define MAX_KEYS 12
 int currentSize = 0;
 
-int qt = 250; 
-int db = qt * 2;
-int half = qt / 2;
+// WN = Whole Note 1
+// HN = Half Note 2
+// QN = Quarter Note 4
+// EN = Eight Note 8
+// SN = Sixteenth Note 16
+
+int QN = 250;
+int HN = QN * 2;
+int WN = HN * 2;
+int EN = QN / 2;
+int SN = EN / 2;
 
 struct KeyFrequencyMap {
   char key[3];  // 두 개의 문자와 null 종결자 '\0'을 위한 공간
@@ -24,9 +31,9 @@ void addKeyValue(const char* key, float value) {
   }
 }
 
-int sn = PB0;
-int sw = PB3;
-int t = 1;
+int speakerPIN = PB0;
+int switchPIN = PB3;
+int t = 0;
 long WDPI = 1500000;
 
 void setup() {
@@ -43,8 +50,8 @@ void setup() {
   addKeyValue("A#", 58.2705);
   addKeyValue("B", 61.7354);
 
-  pinMode(sw, INPUT_PULLUP);
-  pinMode(sn, OUTPUT); // set a pin for buzzer output
+  pinMode(switchPIN, INPUT_PULLUP);
+  pinMode(speakerPIN, OUTPUT); // set a pin for buzzer output
 
   GIMSK = 0b00100000;
   PCMSK = 0b00001000;
@@ -95,7 +102,7 @@ ISR(PCINT0_vect)
 
 void waitInput() {
   for (int i = 0; i <= 30000; i++) {
-    if (digitalRead(sw) == 1) {
+    if (digitalRead(switchPIN) == 1) {
       delayMicroseconds(300);
     } else {
       playSound();
@@ -107,7 +114,7 @@ void playSound() {
 
   if (t % 2 == 0) {
     storm_and_gale();
-  }   else if (t % 2 == 1) {
+  } else if (t % 2 == 1) {
     HAPPY_BIRTHDAY_TO_YOU();
   }
 
@@ -117,88 +124,89 @@ void playSound() {
 
 //happy birthday to u
 void HAPPY_BIRTHDAY_TO_YOU() {
-      buzz("G",6,125);
-      buzz("G",6,125);
-      buzz("A",6,250);
-      buzz("G",6,250);
-      buzz("C",7,250);
-      buzz("B",6,500);
-      buzz("G",6,125);
-      buzz("G",6,125);
-      buzz("A",6,250);
-      buzz("G",6,250);
-      buzz("D",7,250);
-      buzz("C",7,500);
-      buzz("G",6,125);
-      buzz("G",6,125);
-      buzz("G",7,250);
-      buzz("E",7,250);
-      buzz("C",7,250);
-      buzz("B",6,250);
-      buzz("A",6,250);
-      buzz("F",7,125);
-      buzz("F",7,125);
-      buzz("E",7,250);
-      buzz("C",7,250);
-      buzz("D",7,250);
-      buzz("C",7,500);
+      buzz("G",6,EN);
+      buzz("G",6,EN);
+      buzz("A",6,QN);
+      buzz("G",6,QN);
+      buzz("C",7,QN);
+      buzz("B",6,WN);
+      buzz("G",6,EN);
+      buzz("G",6,EN);
+      buzz("A",6,QN);
+      buzz("G",6,QN);
+      buzz("D",7,QN);
+      buzz("C",7,WN);
+      buzz("G",6,EN);
+      buzz("G",6,EN);
+      buzz("G",7,QN);
+      buzz("E",7,QN);
+      buzz("C",7,QN);
+      buzz("B",6,QN);
+      buzz("A",6,QN);
+      buzz("F",7,EN);
+      buzz("F",7,EN);
+      buzz("E",7,QN);
+      buzz("C",7,QN);
+      buzz("D",7,QN);
+      buzz("C",7,WN);         
 }
 
+//질풍가도
 void storm_and_gale(){
-  buzz("G", 6,qt);
-  buzz("A", 6,qt);
-  buzz("B", 6,db);
-  buzz("C", 7,qt);
-  buzz("B", 6,half);
-  buzz("A", 6,db + half);
-  buzz("B", 6,qt);
-  buzz("A", 6,half);
-  buzz("G", 6,qt + half);
-  buzz("G", 6,qt);
-  buzz("G", 6,half);
-  buzz("A", 6,half);
-  buzz("B", 6,half);  
-  buzz("B", 6,db + half);    
-  buzz("E", 6,qt);    
-  buzz("F#",6,half);    
-  buzz("G", 6,qt + half);    
-  buzz("G", 6,qt);    
-  buzz("A", 6,qt);    
-  buzz("G", 6,half);    
-  buzz("F#",6,qt + half);    
-  buzz("F#",6,qt);    
-  buzz("E", 6,qt);    
-  buzz("D", 6,half);    
-  buzz("E", 6,db + db);
+      buzz("G", 6,QN);
+      buzz("A", 6,QN);
+      buzz("B", 6,HN);
+      buzz("C", 7,QN);
+      buzz("B", 6,EN);
+      buzz("A", 6,HN + EN);
+      buzz("B", 6,QN);
+      buzz("A", 6,EN);
+      buzz("G", 6,QN + EN);
+      buzz("G", 6,QN);
+      buzz("G", 6,EN);
+      buzz("A", 6,EN);
+      buzz("B", 6,EN);  
+      buzz("B", 6,HN + EN);    
+      buzz("E", 6,QN);    
+      buzz("F#",6,EN);    
+      buzz("G", 6,QN + EN);    
+      buzz("G", 6,QN);    
+      buzz("A", 6,QN);    
+      buzz("G", 6,EN);    
+      buzz("F#",6,QN + EN);    
+      buzz("F#",6,QN);    
+      buzz("E", 6,QN);    
+      buzz("D", 6,EN);    
+      buzz("E", 6,WN);
 
-  buzz("G", 6,qt);
-  buzz("A", 6,qt);
-  buzz("B", 6,db);
-  buzz("C", 7,qt);
-  buzz("B", 6,half);
-  buzz("A", 6,db + half);
-  buzz("B", 6,qt);
-  buzz("A", 6,half);
-  buzz("G", 6,qt + half);
-  buzz("G", 6,qt);
-  buzz("G", 6,half);
-  buzz("A", 6,half);
-  buzz("B", 6,half);  
-  buzz("B", 6,db + half);    
-  buzz("E", 6,qt);    
-  buzz("F#",6,half);    
-  buzz("G", 6,qt + half);    
-  buzz("G", 6,qt);    
-  buzz("A", 6,qt);    
-  buzz("G", 6,half);    
-  buzz("F#",6,db + half);    
-  buzz("B", 6,qt);    
-  buzz("B", 6,qt);    
-  buzz("A", 6,half);  
-  buzz("G", 6,db + db + qt + half);  
-  buzz("E", 6,qt);    
-  buzz("D", 6,qt);    
-  buzz("G", 6,db + db + qt + half);    
+      buzz("G", 6,QN);
+      buzz("A", 6,QN);
+      buzz("B", 6,HN);
+      buzz("C", 7,QN);
+      buzz("B", 6,EN);
+      buzz("A", 6,HN + EN);
+      buzz("B", 6,QN);
+      buzz("A", 6,EN);
+      buzz("G", 6,QN + EN);
+      buzz("G", 6,QN);
+      buzz("G", 6,EN);
+      buzz("A", 6,EN);
+      buzz("B", 6,EN);  
+      buzz("B", 6,HN + EN);    
+      buzz("E", 6,QN);    
+      buzz("F#",6,EN);    
+      buzz("G", 6,QN + EN);    
+      buzz("G", 6,QN);    
+      buzz("A", 6,QN);    
+      buzz("G", 6,EN);    
+      buzz("F#",6,HN + EN);    
+      buzz("B", 6,QN);    
+      buzz("B", 6,QN);    
+      buzz("A", 6,EN);  
+      buzz("G", 6,WN + QN + EN);  
+      buzz("E", 6,QN);    
+      buzz("D", 6,QN);    
+      buzz("G", 6,WN + QN + EN);
 }
 
 void buzz(const char* key, int octave , long length) {
@@ -207,9 +215,9 @@ void buzz(const char* key, int octave , long length) {
   long delayValue = WDPI / frequency / 2; // calculate the delay value between transitions
   long numCycles = frequency * length / 1300; // calculate the number of cycles for proper timing
   for (long i = 0; i < numCycles; i++) { // for the calculated length of time...
-    digitalWrite(sn, HIGH); // write the buzzer pin high to push out the diaphram
+    digitalWrite(speakerPIN, HIGH); // write the buzzer pin high to push out the diaphram
     delayMicroseconds(delayValue); // wait for the calculated delay value
-    digitalWrite(sn, LOW); // write the buzzer pin low to pull back the diaphram
+    digitalWrite(speakerPIN, LOW); // write the buzzer pin low to pull back the diaphram
     delayMicroseconds(delayValue - 1); // wait againf or the calculated delay value
   }
   delay(20);

@@ -30,7 +30,7 @@ void addKeyValue(const char* key, float value) {
 }
 
 long WDPI = 1500000;
-int piezo = 8;
+int speakerPIN = 8;
 
 void setup() {
   addKeyValue("C", 32.7032);
@@ -46,7 +46,7 @@ void setup() {
   addKeyValue("A#", 58.2705);
   addKeyValue("B", 61.7354);
   
-  pinMode(piezo, OUTPUT);
+  pinMode(speakerPIN, OUTPUT);
 
   // scale();
   // HAPPY_BIRTHDAY_TO_YOU();
@@ -183,9 +183,9 @@ void buzz(const char* key, int octave , long length) {
   long delayValue = WDPI / frequency / 2; // calculate the delay value between transitions
   long numCycles = frequency * length / 1300; // calculate the number of cycles for proper timing
   for (long i = 0; i < numCycles; i++) { // for the calculated length of time...
-    digitalWrite(piezo, HIGH); // write the buzzer pin high to push out the diaphram
+    digitalWrite(speakerPIN, HIGH); // write the buzzer pin high to push out the diaphram
     delayMicroseconds(delayValue); // wait for the calculated delay value
-    digitalWrite(piezo, LOW); // write the buzzer pin low to pull back the diaphram
+    digitalWrite(speakerPIN, LOW); // write the buzzer pin low to pull back the diaphram
     delayMicroseconds(delayValue - 1); // wait againf or the calculated delay value
   }
   delay(20);
