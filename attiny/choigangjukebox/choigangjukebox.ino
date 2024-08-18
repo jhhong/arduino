@@ -120,11 +120,13 @@ void waitInput() {
 
 void playSound() {
 
-  if (t % 3 == 0) {
+  if (t % 4 == 0) {
+    daeho(350);
+  } else if (t % 4 == 1) {
     storm_and_gale(250);
-  } else if (t % 3 == 1) {
+  } else if (t % 4 == 2) {
     dream_of_octopus(350);
-  } else if (t % 3 == 2) {
+  } else if (t % 4 == 3) {
     HAPPY_BIRTHDAY_TO_YOU(250);
   }
 
@@ -281,6 +283,20 @@ void dream_of_octopus(int speed){
   buzz("B", 6,SN);  
   buzz("E", 6,EN + SN);  
   buzz("G", 6,HN + QN);   
+}
+
+//이대호 응원가. 대 - 호 대 -호
+void daeho(int speed){
+  changeSpeed(speed);
+  
+  buzz("C", 6,HN);
+  buzz("G", 5,HN);
+  buzz("C", 6,HN);
+  buzz("G", 5,HN);
+  buzz("C", 6,HN);
+  buzz("G", 5,HN);
+  buzz("C", 6,HN);
+  buzz("G", 5,HN);  
 }
 
 void buzz(const char* key, int octave , long length) {
