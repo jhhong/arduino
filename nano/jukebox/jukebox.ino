@@ -57,9 +57,10 @@ void setup() {
   pinMode(speakerPIN, OUTPUT);
 
   // scale();
-  HAPPY_BIRTHDAY_TO_YOU(250);
-  storm_and_gale(250);
-  dream_of_octopus(350);
+  youshowUp(350);
+  // HAPPY_BIRTHDAY_TO_YOU(250);
+  // storm_and_gale(250);
+  // dream_of_octopus(350);
 }
 
 float getFrequency(const char* key, int octave){
@@ -82,6 +83,95 @@ float getFrequency(const char* key, int octave){
 void loop() {
   // put your main code here, to run repeatedly:
 
+}
+
+//나타나
+void youshowUp(int speed) {
+  changeSpeed(speed);
+
+  buzz("G", 6,EN);
+  buzz("G", 7,EN);
+  buzz("F", 7,EN);
+  buzz("F", 7,EN);
+  buzz("E", 7,EN);
+  buzz("E", 7,QN);
+  buzz("F", 7,EN);
+  buzz("F", 7,HN + EN);
+
+  buzz("G", 6,EN);
+  buzz("F", 7,EN);
+  buzz("E", 7,EN);
+  buzz("E", 7,EN);
+  buzz("D", 7,EN);
+  buzz("D", 7,QN);
+  buzz("E", 7,EN);
+  buzz("E", 7,HN + EN);
+
+  buzz("G", 6,EN);
+  buzz("E", 7,EN);
+  buzz("D", 7,EN);
+  buzz("D", 7,EN);
+  buzz("C", 7,EN);
+  buzz("C", 7,QN);
+  buzz("D", 7,EN);
+  buzz("D", 7,QN + EN);
+  
+  buzz("D", 7,EN);
+  buzz("E", 7,EN);
+  buzz("F", 7,QN);
+  buzz("E", 7,EN);
+  buzz("D", 7,QN + EN);
+  buzz("E", 7,QN);
+  buzz("C#", 7,QN);
+  buzz("A",  6,HN + QN);
+  
+  buzz("G",  7,HN);
+
+  buzz("G", 7,EN);
+  buzz("G", 7,EN);
+  buzz("F", 7,EN);
+  buzz("F", 7,EN);
+  buzz("E", 7,EN);
+  buzz("E", 7,QN);
+  buzz("F", 7,EN);
+  buzz("F", 7,HN + EN);
+
+  buzz("A", 7,EN);
+  buzz("A", 7,EN);
+  buzz("G", 7,EN);
+  buzz("G", 7,EN);  
+  buzz("F#",7,EN);  
+  buzz("F#",7,QN);  
+  buzz("G", 7,EN);  
+  buzz("G", 7,HN + EN);  
+
+  buzz("E", 7,EN);
+  buzz("E", 7,EN);
+  buzz("D", 7,EN);
+  buzz("C", 7,EN);  
+  buzz("D", 7,EN);  
+  buzz("D", 7,QN + EN);  
+  buzz("D", 7,QN);  
+  buzz("C", 7,EN);  
+  buzz("B", 6,EN);  
+  buzz("C", 7,EN);  
+  buzz("C", 7,QN + EN);  
+  buzz("C", 7,QN);  
+  buzz("B", 6,EN);  
+  buzz("B", 6,EN);  
+  buzz("A", 6,EN);  
+  buzz("A", 6,QN);  
+  buzz("B", 6,EN);  
+  buzz("C", 7,QN);  
+  buzz("G", 7,QN);  
+  buzz("G", 7,HN);  
+
+  buzz("G", 6,EN);  
+  buzz("E", 7,EN);  
+  buzz("D", 7,EN);  
+  buzz("C", 7,EN);  
+  buzz("D", 7,QN);  
+  buzz("C", 7,WN);  
 }
 
 void scale(int speed){
