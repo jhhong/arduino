@@ -124,21 +124,44 @@ void waitInput() {
 }
 
 void playSound() {
-
+  
   if (t % 5 == 0) {
-    youshowUp(350);
+    phantom_of_opera(300);
   } else if (t % 5 == 1) {
-    daeho(350);
+    youshowUp(350);
   } else if (t % 5 == 2) {
-    storm_and_gale(250);
+    daeho(350);
   } else if (t % 5 == 3) {
-    dream_of_octopus(350);
+    storm_and_gale(250);
   } else if (t % 5 == 4) {
-    HAPPY_BIRTHDAY_TO_YOU(250);
+    dream_of_octopus(350);
   }
 
   delay(200);
   t++;
+}
+
+//Phantom of opera
+void phantom_of_opera(int speed) {
+  changeSpeed(speed);
+
+  buzz("D", 7,WN + HN);
+  buzz("D", 7,EN);
+  buzz("Db",7,EN);
+  buzz("C", 7,EN);
+  buzz("B", 6,EN);
+  buzz("Bb", 6,WN);
+
+  buzz("D", 7,WN + HN);
+  buzz("D", 7,EN);
+  buzz("Db",7,EN);
+  buzz("C", 7,EN);
+  buzz("B", 6,EN);
+  buzz("Bb", 6,WN);
+
+  buzz("Ab", 6,EN);
+  buzz("Bb", 6,EN);
+
 }
 
 //나타나
