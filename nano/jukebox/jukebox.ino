@@ -1,4 +1,4 @@
-#define MAX_KEYS 12
+#define MAX_KEYS 17
 int currentSize = 0;
 
 // WN = Whole Note 1
@@ -43,21 +43,27 @@ int speakerPIN = 8;
 void setup() {
   addKeyValue("C", 32.7032);
   addKeyValue("C#", 34.6478);
+  addKeyValue("Db", 34.6478);
   addKeyValue("D", 36.7081);
   addKeyValue("D#", 38.8909);
+  addKeyValue("Eb", 38.8909);
   addKeyValue("E", 41.2034);
   addKeyValue("F", 43.6535);
   addKeyValue("F#", 46.2493);
+  addKeyValue("Gb", 46.2493);
   addKeyValue("G", 48.9994);
   addKeyValue("G#", 51.9130);
+  addKeyValue("Ab", 51.9130);
   addKeyValue("A", 55.0000);
   addKeyValue("A#", 58.2705);
+  addKeyValue("Bb", 58.2705);
   addKeyValue("B", 61.7354);
   
   pinMode(speakerPIN, OUTPUT);
 
+  phantom_of_opera(300);
   // scale();
-  youshowUp(350);
+  // youshowUp(350);
   // HAPPY_BIRTHDAY_TO_YOU(250);
   // storm_and_gale(250);
   // dream_of_octopus(350);
@@ -82,6 +88,30 @@ float getFrequency(const char* key, int octave){
 
 void loop() {
   // put your main code here, to run repeatedly:
+
+}
+
+
+//Phantom of opera
+void phantom_of_opera(int speed) {
+  changeSpeed(speed);
+
+  buzz("D", 7,WN + HN);
+  buzz("D", 7,EN);
+  buzz("Db",7,EN);
+  buzz("C", 7,EN);
+  buzz("B", 6,EN);
+  buzz("Bb", 6,WN);
+
+  buzz("D", 7,WN + HN);
+  buzz("D", 7,EN);
+  buzz("Db",7,EN);
+  buzz("C", 7,EN);
+  buzz("B", 6,EN);
+  buzz("Bb", 6,WN);
+
+  buzz("Ab", 6,EN);
+  buzz("Bb", 6,EN);
 
 }
 

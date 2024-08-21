@@ -1,6 +1,6 @@
 #include <avr/sleep.h>
 
-#define MAX_KEYS 12
+#define MAX_KEYS 17
 int currentSize = 0;
 
 // WN = Whole Note 1
@@ -47,15 +47,20 @@ long WDPI = 1500000;
 void setup() {
   addKeyValue("C", 32.7032);
   addKeyValue("C#", 34.6478);
+  addKeyValue("Db", 34.6478);
   addKeyValue("D", 36.7081);
   addKeyValue("D#", 38.8909);
+  addKeyValue("Eb", 38.8909);
   addKeyValue("E", 41.2034);
   addKeyValue("F", 43.6535);
   addKeyValue("F#", 46.2493);
+  addKeyValue("Gb", 46.2493);
   addKeyValue("G", 48.9994);
   addKeyValue("G#", 51.9130);
+  addKeyValue("Ab", 51.9130);
   addKeyValue("A", 55.0000);
   addKeyValue("A#", 58.2705);
+  addKeyValue("Bb", 58.2705);
   addKeyValue("B", 61.7354);
 
   pinMode(switchPIN, INPUT_PULLUP);
