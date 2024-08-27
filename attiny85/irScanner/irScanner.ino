@@ -28,6 +28,8 @@ void setup() {
   oled.begin();
   oled.clear();
   oled.on();
+  
+  printText(0, "READY...");
 }
 
 void loop() {
@@ -61,8 +63,7 @@ const char* getProtocolName(decode_type_t protocol) {
 void printIRInfomation(){
   oled.clear();
   
-  printText(0, "Protocol: " + getProtocolName(IrReceiver.decodedIRData.protocol));
-  printText(1, "Address: " + (IrReceiver.decodedIRData.address, HEX));
-  printText(2, "Command : " + (IrReceiver.decodedIRData.command, HEX));
-  printText(3, "---");
+  printText(0, getProtocolName(IrReceiver.decodedIRData.protocol));
+  // printText(1, (IrReceiver.decodedIRData.address, HEX));
+  // printText(2, (IrReceiver.decodedIRData.command, HEX));
 }
