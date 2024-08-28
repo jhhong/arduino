@@ -10,9 +10,9 @@
 #define DECODE_SAMSUNG
 #define DECODE_NEC          // Includes Apple and Onkyo
 #define DECODE_RC5
-#define DECODE_PANASONIC    // alias for DECODE_KASEIKYO
+// #define DECODE_PANASONIC    // alias for DECODE_KASEIKYO
 #define DECODE_RC6
-#define DECODE_FAST
+// #define DECODE_FAST
 
 #include <TinyWireM.h>
 #include <Tiny4kOLED.h>
@@ -21,15 +21,23 @@
 #include "ATtinySerialOut.hpp"
 #include <IRremote.hpp> // include the library
 
+char protocol[10];
+char address[20];
+char command[20];
+
 void setup() {
 
   IrReceiver.begin(IR_RECV_PIN, ENABLE_LED_FEEDBACK);
 
   oled.begin();
+  oled.enableChargePump(); // The default is off, but most boards need this.
+
   oled.clear();
+  oled.setFont(FONT6X8P);
   oled.on();
-  
-  printText(0, "READY...");
+
+  oled.setCursor(0, 0);
+  oled.print(F("READY..."));
 }
 
 void loop() {
@@ -37,33 +45,54 @@ void loop() {
     if (IrReceiver.decodedIRData.protocol == UNKNOWN) {
         IrReceiver.resume();
     } else {
-        printIRInfomation();
+        printIRInformation(IrReceiver.decodedIRData);
         IrReceiver.resume();
     }
   }
 }
 
 void printText(int pos, char *text) {
-  oled.setFont(FONT6X8P);
   oled.setCursor(0, pos);
   oled.print(text);
 }
 
-const char* getProtocolName(decode_type_t protocol) {
-  switch (protocol) {
-    case NEC: return "NEC";
-    case SONY: return "SONY";
-    case RC5: return "RC5";
-    case RC6: return "RC6";
-    case LG: return "LG";
-    default: return "UNKNOWN";
-  }
-}
+// const char* getProtocolName(decode_type_t protocol) {
+//   switch (protocol) {
+//     case NEC: return "NEC";
+//     case SONY: return "SONY";
+//     case RC5: return "RC5";
+//     case RC6: return "RC6";
+//     case LG: return "LG";
+//     default: return "UNKNOWN";
+//   }
+// }
 
-void printIRInfomation(){
-  oled.clear();
-  
-  printText(0, getProtocolName(IrReceiver.decodedIRData.protocol));
-  // printText(1, (IrReceiver.decodedIRData.address, HEX));
-  // printText(2, (IrReceiver.decodedIRData.command, HEX));
+void printIRInformation(IRData data) {
+    char buffer[9];  // 16진수로 변환된 값을 저장할 버퍼 (최대 8자리 + null terminator)
+
+    oled.clear();
+
+    // 프로토콜 번호를 10진수로 출력 (필요에 따라 16진수로 변환 가능)
+    oled.setCursor(0, 0);
+    oled.print("Protocol: ");
+    itoa(data.protocol, buffer, 10);  // 10진수로 변환
+    oled.print(buffer);
+
+    // 주소를 16진수로 변환하여 출력
+    oled.setCursor(0, 1);
+    oled.print("Address: 0x");
+    itoa(data.address, buffer, 16);  // 16진수로 변환
+    oled.print(buffer);
+
+    // 명령어를 16진수로 변환하여 출력
+    oled.setCursor(0, 2);
+    oled.print("Command: 0x");
+    itoa(data.command, buffer, 16);  // 16진수로 변환
+    oled.print(buffer);
+
+    // 시간 정보 출력
+    oled.setCursor(0, 3);
+    oled.print("Millis: ");
+    ltoa(millis(), buffer, 10);  // 10진수로 변환 (millis는 unsigned long이므로 ltoa 사용)
+    oled.print(buffer);
 }
