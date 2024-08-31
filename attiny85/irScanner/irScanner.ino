@@ -28,6 +28,7 @@ char protocol[10];
 char address[20];
 char command[20];
 int i = 0;
+bool pushed = false;
 
 void setup() {
 
@@ -56,7 +57,8 @@ void loop() {
     }
   }
 
-  if(digitalRead(SWITCH_PIN) == LOW) {
+  if(digitalRead(SWITCH_PIN) == LOW && !pushed) {
+    pushed = true;
 
     if (i % 3 == 0) {
       IrSender.sendNEC(0x4, 0x8, 1);
@@ -70,6 +72,7 @@ void loop() {
     }
 
     i++;
+    pushed = false;
   }
 }
 
