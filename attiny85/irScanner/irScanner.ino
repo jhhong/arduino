@@ -1,17 +1,20 @@
-#define PIN_PB0 PB0
-#define PIN_PB1 PB1
-#define PIN_PB2 PB2
-#define PIN_PB3 PB3
-#define PIN_PB4 PB4
-#define PIN_PB5 PB5
+#define PIN_PB0 PB0 //SDA
+#define PIN_PB1 PB1 //IR_RECV_PIN
+#define PIN_PB2 PB2 //SCL
+#define PIN_PB3 PB3 //SWITCH_PIN
+#define PIN_PB4 PB4 //IR_SEND_PIN. Only PB4 working
+#define PIN_PB5 PB5 //RESET
+
 #define IR_RECV_PIN PB1
+#define IR_SEND_PIN PB4
+#define SWITCH_PIN PB3
 
 #define DECODE_LG
 #define DECODE_SAMSUNG
 #define DECODE_NEC          // Includes Apple and Onkyo
 #define DECODE_RC5
-// #define DECODE_PANASONIC    // alias for DECODE_KASEIKYO
 #define DECODE_RC6
+// #define DECODE_PANASONIC    // alias for DECODE_KASEIKYO
 // #define DECODE_FAST
 
 #include <TinyWireM.h>
@@ -24,10 +27,13 @@
 char protocol[10];
 char address[20];
 char command[20];
+int i = 0;
 
 void setup() {
 
+  pinMode(SWITCH_PIN, INPUT_PULLUP);
   IrReceiver.begin(IR_RECV_PIN, ENABLE_LED_FEEDBACK);
+  IrSender.begin();
 
   oled.begin();
   oled.enableChargePump(); // The default is off, but most boards need this.
@@ -48,6 +54,22 @@ void loop() {
         printIRInformation(IrReceiver.decodedIRData);
         IrReceiver.resume();
     }
+  }
+
+  if(digitalRead(SWITCH_PIN) == LOW) {
+
+    if (i % 3 == 0) {
+      IrSender.sendNEC(0x4, 0x8, 1);
+      printText(3, "sendNEC 0x4 0x8");
+    } else if (i % 3 == 1) {
+      IrSender.sendSamsung(0x7, 0x2, 1); 
+      printText(3, "sendSamsung");      
+    } else if (i % 3 == 2) {
+      IrSender.sendNEC(0x1539, 0x0, 1);       
+      printText(3, "sendNEC 0x1539 0x0");
+    }
+
+    i++;
   }
 }
 
