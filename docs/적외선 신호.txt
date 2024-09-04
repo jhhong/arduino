@@ -87,3 +87,113 @@ rawData[16]:
  + 100,-3900 + 300,- 200 + 250,- 250 + 250,-1200
  + 200,- 600 + 200,- 800 + 100
 Sum: 9150
+
+
+
+-----------------------------------------------
+미니 리모컨
+
+1번
+
+Protocol=NEC Address=0x0 Command=0x45 Raw-Data=0xBA45FF00 32 bits LSB first
+Send with: IrSender.sendNEC(0x0, 0x45, <numberOfRepeats>);
+
+Protocol=NEC Address=0x0 Command=0x45 Repeat gap=39550us
+
+2번
+Protocol=NEC Address=0x0 Command=0x46 Raw-Data=0xB946FF00 32 bits LSB first
+Send with: IrSender.sendNEC(0x0, 0x46, <numberOfRepeats>);
+
+Protocol=NEC Address=0x0 Command=0x46 Repeat gap=39550us
+
+3번
+Protocol=NEC Address=0x0 Command=0x47 Raw-Data=0xB847FF00 32 bits LSB first
+Send with: IrSender.sendNEC(0x0, 0x47, <numberOfRepeats>);
+
+Protocol=NEC Address=0x0 Command=0x47 Repeat gap=39600us
+
+4번
+Protocol=NEC Address=0x0 Command=0x44 Raw-Data=0xBB44FF00 32 bits LSB first
+Send with: IrSender.sendNEC(0x0, 0x44, <numberOfRepeats>);
+
+Protocol=NEC Address=0x0 Command=0x44 Repeat gap=39600us
+
+5번
+Protocol=NEC Address=0x0 Command=0x40 Raw-Data=0xBF40FF00 32 bits LSB first
+Send with: IrSender.sendNEC(0x0, 0x40, <numberOfRepeats>);
+
+Protocol=NEC Address=0x0 Command=0x40 Repeat gap=39550us
+
+6번
+Protocol=NEC Address=0x0 Command=0x43 Raw-Data=0xBC43FF00 32 bits LSB first
+Send with: IrSender.sendNEC(0x0, 0x43, <numberOfRepeats>);
+
+Protocol=NEC Address=0x0 Command=0x43 Repeat gap=39550us
+
+7번
+Protocol=NEC Address=0x0 Command=0x7 Raw-Data=0xF807FF00 32 bits LSB first
+Send with: IrSender.sendNEC(0x0, 0x7, <numberOfRepeats>);
+
+Protocol=NEC Address=0x0 Command=0x7 Repeat gap=39550us
+
+8번
+Protocol=NEC Address=0x0 Command=0x15 Raw-Data=0xEA15FF00 32 bits LSB first
+Send with: IrSender.sendNEC(0x0, 0x15, <numberOfRepeats>);
+
+Protocol=NEC Address=0x0 Command=0x15 Repeat gap=39600us
+
+9번
+Protocol=NEC Address=0x0 Command=0x9 Raw-Data=0xF609FF00 32 bits LSB first
+Send with: IrSender.sendNEC(0x0, 0x9, <numberOfRepeats>);
+
+Protocol=NEC Address=0x0 Command=0x9 Repeat gap=39600us
+
+0번
+Protocol=NEC Address=0x0 Command=0x19 Raw-Data=0xE619FF00 32 bits LSB first
+Send with: IrSender.sendNEC(0x0, 0x19, <numberOfRepeats>);
+
+Protocol=NEC Address=0x0 Command=0x19 Repeat gap=39550us
+
+*표
+Protocol=NEC Address=0x0 Command=0x16 Raw-Data=0xE916FF00 32 bits LSB first
+Send with: IrSender.sendNEC(0x0, 0x16, <numberOfRepeats>);
+
+Protocol=NEC Address=0x0 Command=0x16 Repeat gap=39600us
+
+#표
+Protocol=NEC Address=0x0 Command=0xD Raw-Data=0xF20DFF00 32 bits LSB first
+Send with: IrSender.sendNEC(0x0, 0xD, <numberOfRepeats>);
+
+Protocol=NEC Address=0x0 Command=0xD Repeat gap=39550us
+
+OK버튼
+Protocol=NEC Address=0x0 Command=0x1C Raw-Data=0xE31CFF00 32 bits LSB first
+Send with: IrSender.sendNEC(0x0, 0x1C, <numberOfRepeats>);
+
+Protocol=NEC Address=0x0 Command=0x1C Repeat gap=39600us
+
+위쪽 화살표
+Protocol=NEC Address=0x0 Command=0x18 Raw-Data=0xE718FF00 32 bits LSB first
+Send with: IrSender.sendNEC(0x0, 0x18, <numberOfRepeats>);
+
+Protocol=NEC Address=0x0 Command=0x18 Repeat gap=39600us
+
+아래쪽 화살표
+Protocol=NEC Address=0x0 Command=0x52 Raw-Data=0xAD52FF00 32 bits LSB first
+Send with: IrSender.sendNEC(0x0, 0x52, <numberOfRepeats>);
+
+Protocol=NEC Address=0x0 Command=0x52 Repeat gap=39600us
+
+왼쪽 화살표
+Protocol=NEC Address=0x0 Command=0x8 Raw-Data=0xF708FF00 32 bits LSB first
+Send with: IrSender.sendNEC(0x0, 0x8, <numberOfRepeats>);
+
+Protocol=NEC Address=0x0 Command=0x8 Repeat gap=39600us
+
+오른쪽 화살표
+Protocol=NEC Address=0x0 Command=0x5A Raw-Data=0xA55AFF00 32 bits LSB first
+Send with: IrSender.sendNEC(0x0, 0x5A, <numberOfRepeats>);
+
+Protocol=NEC Address=0x0 Command=0x5A Repeat gap=39600us
+
+-----------------------------------------------
