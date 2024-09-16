@@ -55,9 +55,14 @@ void setup() {
 }
 
 void loop() {
+
   scroll("Hello World", colors[1]);
   scroll("I Love U", colors[0]);
   scroll("Papago Plus", colors[2]);
+  // drawPixel(7, 0, colors[0]);
+  // drawPixel(7, 1, colors[0]);
+  // drawPixel(7, 2, colors[0]);
+
 }
 
 void scroll(char *text, uint16_t color){
@@ -71,4 +76,9 @@ void scroll(char *text, uint16_t color){
     matrix.show();
     delay(80);
   }
+}
+
+void drawPixel(int16_t x, int16_t y, uint16_t color) {
+  matrix.drawPixel(x, y , color);
+  matrix.show();
 }
