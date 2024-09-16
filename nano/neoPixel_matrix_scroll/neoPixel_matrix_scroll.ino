@@ -10,6 +10,9 @@
 
 #define PIN 6
 
+#define MAX_WIDTH 32
+#define MAX_HEIGHT 8
+
 // MATRIX DECLARATION:
 // Parameter 1 = width of NeoPixel matrix
 // Parameter 2 = height of matrix
@@ -36,7 +39,7 @@
 // Arduino.  When held that way, the first pixel is at the top right, and
 // lines are arranged in columns, progressive order.  The shield uses
 // 800 KHz (v2) pixels that expect GRB color data.
-Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(32, 8, PIN,
+Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(MAX_WIDTH, MAX_HEIGHT, PIN,
   NEO_MATRIX_BOTTOM     + NEO_MATRIX_RIGHT +
   NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG,
   NEO_GRB            + NEO_KHZ800);
@@ -47,22 +50,25 @@ const uint16_t colors[] = {
 void setup() {
   matrix.begin();
   matrix.setTextWrap(false);
-  matrix.setBrightness(40);
-  matrix.setTextColor(colors[0]);
+  matrix.setBrightness(10);
+  matrix.setTextColor(colors[1]);
 }
 
-int x    = matrix.width();
-int pass = 0;
-
 void loop() {
-  matrix.fillScreen(0);
-  matrix.setCursor(x, 0);
-  matrix.print(F("Howdy"));
-  if(--x < -36) {
-    x = matrix.width();
-    if(++pass >= 3) pass = 0;
-    matrix.setTextColor(colors[pass]);
+  scroll("Hello World", colors[1]);
+  scroll("I Love U", colors[0]);
+  scroll("Papago Plus", colors[2]);
+}
+
+void scroll(char *text, uint16_t color){
+
+  for(int xPos = matrix.width() ; xPos > -matrix.width() * 2; xPos--) {
+    matrix.fillScreen(0);
+    matrix.setCursor(xPos, 0);
+    matrix.setTextColor(color);
+    matrix.print(text);
+
+    matrix.show();
+    delay(80);
   }
-  matrix.show();
-  delay(100);
 }
