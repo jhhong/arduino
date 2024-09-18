@@ -13,6 +13,27 @@
 #define MAX_WIDTH 32
 #define MAX_HEIGHT 8
 
+struct Point {
+  int x;
+  int y;
+};
+
+struct LEDChar {
+  int offset;
+  Point points[10];
+};
+
+struct DisplayChars {
+  LEDChar ledChars[2];
+};
+
+DisplayChars displayChars = {
+  {
+    {0,{{1,1},{2,1},{3,1},{1,2},{3,2},{1,3},{3,3},{1,4},{2,4},{3,4}}},
+    {10,{{1,1},{2,1},{3,1},{1,2},{3,2},{1,3},{3,3},{1,4},{2,4},{3,4}}}
+  }
+};
+
 // MATRIX DECLARATION:
 // Parameter 1 = width of NeoPixel matrix
 // Parameter 2 = height of matrix
@@ -56,13 +77,22 @@ void setup() {
 
 void loop() {
 
-  scroll("Hello World", colors[1]);
-  scroll("I Love U", colors[0]);
-  scroll("Papago Plus", colors[2]);
+  // scroll("Hello World", colors[1]);
+  // scroll("I Love U", colors[0]);
+  // scroll("Papago Plus", colors[2]);
   // drawPixel(7, 0, colors[0]);
   // drawPixel(7, 1, colors[0]);
   // drawPixel(7, 2, colors[0]);
 
+  for(int i = 0; i < 2 ; i ++) {
+    
+    for (int j = 0; j < 10 ; j++ ) {
+      matrix.drawPixel(displayChars.ledChars[i].offset + displayChars.ledChars[i].points[j].x, displayChars.ledChars[i].points[j].y , colors[0]);
+    }
+  }
+
+  matrix.show(); 
+  delay(100);
 }
 
 void scroll(char *text, uint16_t color){
