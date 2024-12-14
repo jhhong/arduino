@@ -1,29 +1,35 @@
 #include <Servo.h>
 
-Servo myservo;
+const int lightSensorPin = A0; // 조도 센서 핀 설정
+const int servoPin = 8; // 서보모터 핀 설정
+const int threshold = 500; // 조도 센서 임계값 설정
 
-int pos = 0;
-int cdsVal;
+Servo targetServo;
 
 void setup() {
-  Serial.begin(9600);
-  myservo.attach(8);
-  myservo.write(0);
+  // Serial.begin(9600);
+  move(0, 500);
 }
 
 void loop() {
-  cdsVal = analogRead(A0);
-
-  if(cdsVal > 500) {
-    Serial.println("***Hit***");
-    myservo.write(90);
-    delay(500);
-    myservo.write(0);
+  // Serial.println(lightValue);
+  int lightValue = analogRead(lightSensorPin); // 조도 센서 값 읽기
+  
+  if (lightValue >= threshold) {
+    hit();
   }
-
-  // Serial.println(cdsVal);
-  // delay(500);
 }
-//laser pointer
-//330ohm normal 0-10 / 60
-//10K ohm normal 100-230 / 600 
+
+// 모터의 축이 길경우 위치를 잡으려는 떨림이 심해 매번 attach , detach 반복으로 우회
+// -> 별 효과없음. 축의 길이를 줄이고 저항을 줄여서 해결
+void move(int degree, int delayMilliSec) {
+    targetServo.attach(servoPin);
+    targetServo.write(degree); 
+    delay(delayMilliSec);
+    targetServo.detach();
+}
+
+void hit() {
+  move(90, 500);
+  move(0, 500);
+}
