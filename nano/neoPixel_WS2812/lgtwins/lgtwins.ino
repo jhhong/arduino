@@ -50,18 +50,20 @@ const char* messages[] = {
   "LET'S GO LG",
   "HOME RUN LG",
   "LG TWINS FOREVER",
-  "RUN AND HIT"
+  "RUN AND HIT",
+  "KOREA SERIES VICTORY"
 };
 
 // 각 문장의 색상 (RGB)
 const uint16_t colors[][3] = {
-  {255, 0, 0},      // 빨강 - LG TWINS
+  {255, 255, 255},      // 빨강 - LG TWINS
   {0, 255, 0},      // 초록 - LET'S GO LG
   {255, 255, 0},    // 노랑 - HOME RUN LG
   {0, 100, 255},    // 파랑 - LG TWINS FOREVER
   {255, 0, 255}     // 자주색 - RUN AND HIT
 };
 
+const int NUM_MESSAGES = sizeof(messages) / sizeof(messages[0]);  // 메시지 개수 자동 계산
 int scrollPos = MAX_WIDTH;  // 스크롤 위치
 const int MESSAGE_SPACING = 5;  // 문장 사이 간격 (픽셀)
 
@@ -77,13 +79,13 @@ void loop() {
   
   // 전체 스크롤 길이 계산
   int totalWidth = 0;
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < NUM_MESSAGES; i++) {
     totalWidth += strlen(messages[i]) * 6 + MESSAGE_SPACING;
   }
   
   // 모든 문장을 연속으로 그리기
   int currentPos = scrollPos;
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < NUM_MESSAGES; i++) {
     // 현재 문장의 색상 설정
     uint16_t color = matrix.Color(
       colors[i][0],
