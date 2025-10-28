@@ -49,9 +49,10 @@ const char* messages[] = {
   "LG TWINS",
   "LET'S GO LG",
   "HOME RUN LG",
-  "LG TWINS FOREVER",
+  "LG TWINS",
   "RUN AND HIT",
-  "KOREA SERIES VICTORY"
+  "KOREA SERIES VICTORY",
+  "LG TWINS"
 };
 
 // 각 문장의 색상 (RGB)
