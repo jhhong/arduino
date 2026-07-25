@@ -23,7 +23,7 @@ Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(MAX_WIDTH, MAX_HEIGHT, PIN,
 // ===== 게임 설정 (변수처리) =====
 const int FLIES_PER_ROW = 6;                   // 한 행에 표시할 파리 개수 (랜덤 위치)
 const unsigned long BASE_MOVE_INTERVAL = 300;  // 캐릭터 기본 이동 속도 (ms, 클수록 느림)
-const float SPEED_UP_STEP = 0.2;               // 파리 1마리당 기본속도의 0.2배씩 누적 가속
+const float SPEED_UP_STEP = 0.1;               // 파리 1마리당 기본속도의 0.1배씩 누적 가속
 const unsigned long MIN_MOVE_INTERVAL = 20;    // 이동 속도 하한 (ms)
 
 float moveInterval = BASE_MOVE_INTERVAL;       // 현재 이동 속도 (잡을 때마다 감소)
