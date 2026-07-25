@@ -33,9 +33,9 @@ int fliesCaught = 0;   // 이번 판에서 잡은 파리 수
 int yellowCount = 0;   // 이번 판에서 헛스윙(노란색) 수
 
 // ===== 색상 =====
-const uint16_t COLOR_FLY    = matrix.Color(255, 0, 0);    // 빨강 - 파리
-const uint16_t COLOR_CHAR   = matrix.Color(0, 0, 255);    // 파랑 - 캐릭터
-const uint16_t COLOR_YELLOW = matrix.Color(255, 255, 0);  // 노랑 - 헛스윙 표시
+const uint16_t COLOR_FLY    = matrix.Color(60, 150, 230);   // 부드러운 스카이블루 - 파리
+const uint16_t COLOR_CHAR   = matrix.Color(230, 70, 50);    // 부드러운 코럴레드 - 캐릭터
+const uint16_t COLOR_YELLOW = matrix.Color(220, 160, 40);   // 부드러운 앰버 - 헛스윙 표시
 
 // ===== 셀 상태 =====
 #define CELL_EMPTY  0
@@ -54,7 +54,7 @@ int lastSwitchState = HIGH;   // 스위치는 INPUT_PULLUP, 눌리면 LOW
 
 void setup() {
   matrix.begin();
-  matrix.setBrightness(100);  // 밝기 조절 (0-255)
+  matrix.setBrightness(30);  // 밝기 조절 (0-255)
   matrix.setTextWrap(false);  // 텍스트 줄바꿈 방지 (점수/카운트다운 표시용)
   matrix.clear();
 
@@ -175,7 +175,7 @@ void showScore(int score) {
   snprintf(buf, sizeof(buf), "SCORE %d", score);
 
   int textWidth = strlen(buf) * 6;
-  matrix.setTextColor(matrix.Color(0, 255, 255));  // 청록
+  matrix.setTextColor(matrix.Color(60, 190, 190));  // 부드러운 청록
   for (int pos = MAX_WIDTH; pos >= -textWidth; pos--) {
     matrix.clear();
     matrix.setCursor(pos, 0);
@@ -189,7 +189,7 @@ void showScore(int score) {
 void countdown() {
   for (int n = 5; n >= 1; n--) {
     matrix.clear();
-    matrix.setTextColor(matrix.Color(0, 255, 0));  // 초록
+    matrix.setTextColor(matrix.Color(80, 190, 110));  // 부드러운 초록
     matrix.setCursor(14, 0);   // 한 자리 숫자 대략 가운데
     matrix.print(n);
     matrix.show();
