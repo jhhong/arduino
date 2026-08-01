@@ -61,7 +61,8 @@ const unsigned long SPECIAL_BLINK_MS = 200;  // 색 전환 주기 (작을수록 
 #define CELL_EMPTY   0
 #define CELL_FLY     1
 #define CELL_YELLOW  2
-#define CELL_SPECIAL 3   // 특수아이템 (무지개)
+#define CELL_SPECIAL 3   // 특수아이템
+#define CELL_CAUGHT  4   // 이미 처리됨(파리 잡힘/아이템 사용) - 소등, 노란색 불가
 uint8_t grid[MAX_WIDTH][MAX_HEIGHT];
 
 // ===== 캐릭터 상태 =====
@@ -71,11 +72,15 @@ int charDir = 1;   // 이동 방향 (+1: 오른쪽, -1: 왼쪽)
 
 // ===== 타이밍 / 입력 =====
 unsigned long lastMove = 0;
-int lastSwitchState = HIGH;             // 스위치는 INPUT_PULLUP, 눌리면 LOW
-unsigned long lastPressMs = 0;          // 마지막 입력 처리 시각 (논블로킹 디바운스)
-const unsigned long DEBOUNCE_MS = 15;   // 디바운스 시간 (짧게: 연타 허용)
-unsigned long lastDraw = 0;             // 마지막 화면 갱신 시각 (무지개 애니메이션용)
-const unsigned long RAINBOW_REDRAW_MS = 40;  // 무지개 갱신 주기 (작을수록 부드럽고 빠름)
+
+// 스위치 디바운스 (상태 안정화 방식: 바운스로 인한 유령 입력/입력 누락 방지)
+int rawSwitch = HIGH;                 // 직전 원시 읽음값
+int debouncedSwitch = HIGH;           // 디바운스 확정 상태 (눌리면 LOW)
+unsigned long lastBounceMs = 0;       // 마지막 원시값 변화 시각
+const unsigned long DEBOUNCE_MS = 8;  // 이 시간만큼 안정되면 확정 (짧아야 연타 가능)
+
+// 특수아이템 깜빡임 애니메이션
+int lastBlinkIdx = -1;                // 마지막으로 그린 깜빡임 색 인덱스
 
 void setup() {
   matrix.begin();
@@ -102,9 +107,11 @@ void loop() {
   handleSwitch();   // 스위치는 매 루프마다 체크 (반응성 확보)
   handleMovement(); // 이동은 일정 간격마다만
 
-  // 이동과 무관하게 일정 주기로 다시 그려 무지개 색이 빠르게 변하도록
-  if (millis() - lastDraw >= RAINBOW_REDRAW_MS) {
-    lastDraw = millis();
+  // 특수아이템 깜빡임 색이 실제로 바뀌는 순간에만 다시 그림.
+  // (불필요한 matrix.show() 를 줄여 입력 샘플링이 막히는 시간을 최소화)
+  int idx = (millis() / SPECIAL_BLINK_MS) % NUM_SPECIAL_COLORS;
+  if (idx != lastBlinkIdx) {
+    lastBlinkIdx = idx;
     drawScene();
   }
 }
@@ -137,22 +144,36 @@ void initFlies() {
   }
 }
 
-// 스위치 falling edge(HIGH->LOW) 감지 후 판정 (논블로킹 디바운스)
+// 스위치 입력 처리 (상태 안정화 디바운스)
+// 원시값이 DEBOUNCE_MS 이상 안정된 뒤에만 확정 상태로 반영 -> 바운스 튐이 유령 입력을
+// 만들지 못하므로, 유령 입력이 디바운스 창을 잡아먹어 다음 진짜 입력이 씹히는 문제가 사라짐.
 void handleSwitch() {
-  int state = digitalRead(SWITCH_PIN);
-  if (state == LOW && lastSwitchState == HIGH &&
-      (millis() - lastPressMs) > DEBOUNCE_MS) {
-    lastPressMs = millis();
-    if (grid[charX][charY] == CELL_FLY) {
-      catchFly(charX, charY);   // 위치 일치: 파리 잡기 (즉시 제거)
-    } else if (grid[charX][charY] == CELL_SPECIAL) {
-      useSpecial(charX, charY); // 특수아이템: 속도 초기화
-    } else if (grid[charX][charY] == CELL_EMPTY) {
-      grid[charX][charY] = CELL_YELLOW;  // 헛스윙: 노란색 표시
-      yellowCount++;
+  int reading = digitalRead(SWITCH_PIN);
+
+  if (reading != rawSwitch) {   // 원시값이 바뀌면 안정화 타이머 리셋
+    rawSwitch = reading;
+    lastBounceMs = millis();
+  }
+
+  // 값이 충분히 안정되면 확정 상태로 반영
+  if ((millis() - lastBounceMs) > DEBOUNCE_MS && reading != debouncedSwitch) {
+    debouncedSwitch = reading;
+    if (debouncedSwitch == LOW) {   // 확정된 눌림
+      pressAction();
     }
   }
-  lastSwitchState = state;
+}
+
+// 현재 캐릭터 위치에서의 눌림 판정
+void pressAction() {
+  if (grid[charX][charY] == CELL_FLY) {
+    catchFly(charX, charY);   // 위치 일치: 파리 잡기 (즉시 제거)
+  } else if (grid[charX][charY] == CELL_SPECIAL) {
+    useSpecial(charX, charY); // 특수아이템: 속도 초기화
+  } else if (grid[charX][charY] == CELL_EMPTY) {
+    grid[charX][charY] = CELL_YELLOW;  // 헛스윙: 노란색 표시
+    yellowCount++;
+  }
 }
 
 // 일정 간격마다 캐릭터를 지그재그로 이동
@@ -178,7 +199,7 @@ void handleMovement() {
 
 // 잡힌 파리를 즉시 제거 (블로킹 점멸 없음 -> 연타 반응성 확보)
 void catchFly(int x, int y) {
-  grid[x][y] = CELL_EMPTY;
+  grid[x][y] = CELL_CAUGHT;   // 처리됨: 다시 눌러도 노란색 안 됨
 
   fliesCaught++;   // 점수용 누적 (계속 증가)
   speedFlies++;    // 속도 가속용 누적 (특수아이템 사용 시 리셋됨)
@@ -192,7 +213,7 @@ void catchFly(int x, int y) {
 
 // 특수아이템 사용: 속도를 시작 속도로 리셋 (이후 파리부터 다시 가속)
 void useSpecial(int x, int y) {
-  grid[x][y] = CELL_EMPTY;          // 아이템 소비 (제거)
+  grid[x][y] = CELL_CAUGHT;          // 아이템 소비: 다시 눌러도 노란색 안 됨
   moveInterval = BASE_MOVE_INTERVAL; // 속도를 처음 속도로
   speedFlies = 0;                    // 가속 카운터 리셋 -> 이후 파리부터 다시 증가
   drawScene();
