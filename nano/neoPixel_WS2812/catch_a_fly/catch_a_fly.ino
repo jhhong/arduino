@@ -4,6 +4,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_NeoMatrix.h>
 #include <Adafruit_NeoPixel.h>
+#include <EEPROM.h>
 #ifndef PSTR
  #define PSTR // Make Arduino Due happy
 #endif
@@ -31,6 +32,11 @@ float moveInterval = BASE_MOVE_INTERVAL;       // 현재 이동 속도 (잡을 �
 // ===== 점수 카운터 =====
 int fliesCaught = 0;   // 이번 판에서 잡은 파리 수
 int yellowCount = 0;   // 이번 판에서 헛스윙(노란색) 수
+
+// ===== 최고 점수 영구 저장 (EEPROM) =====
+const int  EE_ADDR_MAGIC = 0;      // 저장 여부 표식 주소
+const int  EE_ADDR_SCORE = 1;      // 최고 점수(int, 2바이트) 주소
+const byte EE_MAGIC      = 0x5A;   // "저장된 점수 있음" 표식 값
 
 // ===== 색상 =====
 const uint16_t COLOR_FLY    = matrix.Color(60, 150, 230);   // 부드러운 스카이블루 - 파리
@@ -62,8 +68,15 @@ void setup() {
 
   randomSeed(analogRead(A0));  // 연결 안된 아날로그 핀 노이즈로 시드 생성
 
-  initFlies();
-  drawScene();
+  // 최초 실행: 저장된 최고 점수가 있으면 게임 끝날때와 같은 형태로 노출
+  bool exists;
+  int high = loadHighScore(&exists);
+  if (exists) {
+    showScore(high);
+  }
+  countdown();       // 5,4,3,2,1 카운트 후 게임 시작
+
+  startNewRound();   // 새 판 시작 (파리 배치 + 카운터/속도/위치 초기화)
 }
 
 void loop() {
@@ -161,12 +174,38 @@ void drawScene() {
   matrix.show();
 }
 
-// 한 바퀴 완주 시: 점수 표시 -> 카운트다운 -> 새 판 시작
+// 한 바퀴 완주 시: 점수 표시 -> 최고점수 저장 -> 카운트다운 -> 새 판 시작
 void endRound() {
   int score = fliesCaught * 100 - yellowCount * 10;
-  showScore(score);
+  showScore(score);   // 이번 판 점수 표시 (기존 그대로)
+
+  // 최고 점수 갱신: 저장된 값이 없거나, 이번 점수가 더 높을 때만 저장
+  bool exists;
+  int high = loadHighScore(&exists);
+  if (!exists || score > high) {
+    saveHighScore(score);
+  }
+
   countdown();
   startNewRound();
+}
+
+// 저장된 최고 점수 읽기. exists=저장된 값 존재 여부
+int loadHighScore(bool* exists) {
+  if (EEPROM.read(EE_ADDR_MAGIC) == EE_MAGIC) {
+    int s;
+    EEPROM.get(EE_ADDR_SCORE, s);
+    *exists = true;
+    return s;
+  }
+  *exists = false;
+  return 0;
+}
+
+// 최고 점수 저장 (표식 + 점수)
+void saveHighScore(int score) {
+  EEPROM.write(EE_ADDR_MAGIC, EE_MAGIC);
+  EEPROM.put(EE_ADDR_SCORE, score);
 }
 
 // 점수를 왼쪽으로 스크롤하여 표시 (자릿수 상관없이 다 보임)
