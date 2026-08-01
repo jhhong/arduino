@@ -27,11 +27,16 @@ const unsigned long BASE_MOVE_INTERVAL = 300;  // 캐릭터 기본 이동 속도
 const float SPEED_UP_STEP = 0.1;               // 파리 1마리당 기본속도의 0.1배씩 누적 가속
 const unsigned long MIN_MOVE_INTERVAL = 20;    // 이동 속도 하한 (ms)
 
+// 특수아이템(무지개) 배치 행 (0-based 인덱스 4,6 = 화면상 5행,7행)
+const uint8_t SPECIAL_ROWS[] = {4, 6};
+const int NUM_SPECIAL_ROWS = sizeof(SPECIAL_ROWS) / sizeof(SPECIAL_ROWS[0]);
+
 float moveInterval = BASE_MOVE_INTERVAL;       // 현재 이동 속도 (잡을 때마다 감소)
 
 // ===== 점수 카운터 =====
-int fliesCaught = 0;   // 이번 판에서 잡은 파리 수
+int fliesCaught = 0;   // 이번 판에서 잡은 파리 수 (점수용, 특수아이템에 영향 없음)
 int yellowCount = 0;   // 이번 판에서 헛스윙(노란색) 수
+int speedFlies  = 0;   // 속도 가속용 카운터 (특수아이템 사용 시 0으로 리셋)
 
 // ===== 최고 점수 영구 저장 (EEPROM) =====
 const int  EE_ADDR_MAGIC = 0;      // 저장 여부 표식 주소
@@ -43,10 +48,20 @@ const uint16_t COLOR_FLY    = matrix.Color(60, 150, 230);   // 부드러운 스�
 const uint16_t COLOR_CHAR   = matrix.Color(230, 70, 50);    // 부드러운 코럴레드 - 캐릭터
 const uint16_t COLOR_YELLOW = matrix.Color(220, 160, 40);   // 부드러운 앰버 - 헛스윙 표시
 
+// 특수아이템: 초록/주황/보라 3색을 순환 깜빡임
+const uint16_t SPECIAL_COLORS[] = {
+  matrix.Color(70, 200, 90),    // 초록
+  matrix.Color(230, 120, 20),   // 주황
+  matrix.Color(150, 60, 220),   // 보라
+};
+const int NUM_SPECIAL_COLORS = sizeof(SPECIAL_COLORS) / sizeof(SPECIAL_COLORS[0]);
+const unsigned long SPECIAL_BLINK_MS = 200;  // 색 전환 주기 (작을수록 빠르게 깜빡)
+
 // ===== 셀 상태 =====
-#define CELL_EMPTY  0
-#define CELL_FLY    1
-#define CELL_YELLOW 2
+#define CELL_EMPTY   0
+#define CELL_FLY     1
+#define CELL_YELLOW  2
+#define CELL_SPECIAL 3   // 특수아이템 (무지개)
 uint8_t grid[MAX_WIDTH][MAX_HEIGHT];
 
 // ===== 캐릭터 상태 =====
@@ -59,6 +74,8 @@ unsigned long lastMove = 0;
 int lastSwitchState = HIGH;             // 스위치는 INPUT_PULLUP, 눌리면 LOW
 unsigned long lastPressMs = 0;          // 마지막 입력 처리 시각 (논블로킹 디바운스)
 const unsigned long DEBOUNCE_MS = 15;   // 디바운스 시간 (짧게: 연타 허용)
+unsigned long lastDraw = 0;             // 마지막 화면 갱신 시각 (무지개 애니메이션용)
+const unsigned long RAINBOW_REDRAW_MS = 40;  // 무지개 갱신 주기 (작을수록 부드럽고 빠름)
 
 void setup() {
   matrix.begin();
@@ -84,6 +101,12 @@ void setup() {
 void loop() {
   handleSwitch();   // 스위치는 매 루프마다 체크 (반응성 확보)
   handleMovement(); // 이동은 일정 간격마다만
+
+  // 이동과 무관하게 일정 주기로 다시 그려 무지개 색이 빠르게 변하도록
+  if (millis() - lastDraw >= RAINBOW_REDRAW_MS) {
+    lastDraw = millis();
+    drawScene();
+  }
 }
 
 // 파리 초기 배치: 각 행마다 FLIES_PER_ROW 개를 서로 다른 랜덤 열에
@@ -102,6 +125,16 @@ void initFlies() {
       }
     }
   }
+
+  // 특수아이템: 지정된 각 행에 1개씩, 파리와 겹치지 않는 랜덤 열에
+  for (int i = 0; i < NUM_SPECIAL_ROWS; i++) {
+    int y = SPECIAL_ROWS[i];
+    int x;
+    do {
+      x = random(MAX_WIDTH);
+    } while (grid[x][y] != CELL_EMPTY);
+    grid[x][y] = CELL_SPECIAL;
+  }
 }
 
 // 스위치 falling edge(HIGH->LOW) 감지 후 판정 (논블로킹 디바운스)
@@ -112,6 +145,8 @@ void handleSwitch() {
     lastPressMs = millis();
     if (grid[charX][charY] == CELL_FLY) {
       catchFly(charX, charY);   // 위치 일치: 파리 잡기 (즉시 제거)
+    } else if (grid[charX][charY] == CELL_SPECIAL) {
+      useSpecial(charX, charY); // 특수아이템: 속도 초기화
     } else if (grid[charX][charY] == CELL_EMPTY) {
       grid[charX][charY] = CELL_YELLOW;  // 헛스윙: 노란색 표시
       yellowCount++;
@@ -145,13 +180,22 @@ void handleMovement() {
 void catchFly(int x, int y) {
   grid[x][y] = CELL_EMPTY;
 
-  // 파리 1마리 처치 -> 기본속도의 0.1배씩 누적 가속
-  // 속도배율 = 1 + 0.1 * 잡은수  (예: 1마리=1.1배, 10마리=2.0배)
-  fliesCaught++;
-  moveInterval = BASE_MOVE_INTERVAL / (1.0 + SPEED_UP_STEP * fliesCaught);
+  fliesCaught++;   // 점수용 누적 (계속 증가)
+  speedFlies++;    // 속도 가속용 누적 (특수아이템 사용 시 리셋됨)
+
+  // 기본속도의 0.1배씩 누적 가속: 속도배율 = 1 + 0.1 * speedFlies
+  moveInterval = BASE_MOVE_INTERVAL / (1.0 + SPEED_UP_STEP * speedFlies);
   if (moveInterval < MIN_MOVE_INTERVAL) moveInterval = MIN_MOVE_INTERVAL;
 
   drawScene();  // 즉시 화면 반영 (파리 바로 사라짐)
+}
+
+// 특수아이템 사용: 속도를 시작 속도로 리셋 (이후 파리부터 다시 가속)
+void useSpecial(int x, int y) {
+  grid[x][y] = CELL_EMPTY;          // 아이템 소비 (제거)
+  moveInterval = BASE_MOVE_INTERVAL; // 속도를 처음 속도로
+  speedFlies = 0;                    // 가속 카운터 리셋 -> 이후 파리부터 다시 증가
+  drawScene();
 }
 
 // 전체 화면 다시 그리기
@@ -164,6 +208,10 @@ void drawScene() {
         matrix.drawPixel(x, y, COLOR_FLY);
       } else if (grid[x][y] == CELL_YELLOW) {
         matrix.drawPixel(x, y, COLOR_YELLOW);
+      } else if (grid[x][y] == CELL_SPECIAL) {
+        // 초록/주황/보라 3색 순환 깜빡임
+        int idx = (millis() / SPECIAL_BLINK_MS) % NUM_SPECIAL_COLORS;
+        matrix.drawPixel(x, y, SPECIAL_COLORS[idx]);
       }
     }
   }
@@ -220,7 +268,7 @@ void showScore(int score) {
     matrix.setCursor(pos, 0);
     matrix.print(buf);
     matrix.show();
-    delay(100);  // 스크롤 속도 (클수록 느림)
+    delay(50);  // 스크롤 속도 (클수록 느림)
   }
 }
 
@@ -232,7 +280,7 @@ void countdown() {
     matrix.setCursor(14, 0);   // 한 자리 숫자 대략 가운데
     matrix.print(n);
     matrix.show();
-    delay(1000);
+    delay(500);
   }
 }
 
@@ -240,6 +288,7 @@ void countdown() {
 void startNewRound() {
   fliesCaught = 0;
   yellowCount = 0;
+  speedFlies = 0;
   moveInterval = BASE_MOVE_INTERVAL;
   charX = 0;
   charY = 0;
