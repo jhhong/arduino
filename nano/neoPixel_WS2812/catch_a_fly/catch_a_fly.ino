@@ -56,7 +56,9 @@ int charDir = 1;   // 이동 방향 (+1: 오른쪽, -1: 왼쪽)
 
 // ===== 타이밍 / 입력 =====
 unsigned long lastMove = 0;
-int lastSwitchState = HIGH;   // 스위치는 INPUT_PULLUP, 눌리면 LOW
+int lastSwitchState = HIGH;             // 스위치는 INPUT_PULLUP, 눌리면 LOW
+unsigned long lastPressMs = 0;          // 마지막 입력 처리 시각 (논블로킹 디바운스)
+const unsigned long DEBOUNCE_MS = 15;   // 디바운스 시간 (짧게: 연타 허용)
 
 void setup() {
   matrix.begin();
@@ -102,17 +104,18 @@ void initFlies() {
   }
 }
 
-// 스위치 falling edge(HIGH->LOW) 감지 후 판정
+// 스위치 falling edge(HIGH->LOW) 감지 후 판정 (논블로킹 디바운스)
 void handleSwitch() {
   int state = digitalRead(SWITCH_PIN);
-  if (state == LOW && lastSwitchState == HIGH) {
+  if (state == LOW && lastSwitchState == HIGH &&
+      (millis() - lastPressMs) > DEBOUNCE_MS) {
+    lastPressMs = millis();
     if (grid[charX][charY] == CELL_FLY) {
-      catchFly(charX, charY);   // 위치 일치: 파리 잡기 (점멸 후 제거)
+      catchFly(charX, charY);   // 위치 일치: 파리 잡기 (즉시 제거)
     } else if (grid[charX][charY] == CELL_EMPTY) {
       grid[charX][charY] = CELL_YELLOW;  // 헛스윙: 노란색 표시
       yellowCount++;
     }
-    delay(20);  // 간단한 디바운스
   }
   lastSwitchState = state;
 }
@@ -138,20 +141,17 @@ void handleMovement() {
   drawScene();
 }
 
-// 잡힌 파리를 점멸시킨 뒤 제거
+// 잡힌 파리를 즉시 제거 (블로킹 점멸 없음 -> 연타 반응성 확보)
 void catchFly(int x, int y) {
-  for (int i = 0; i < 4; i++) {
-    matrix.drawPixel(x, y, (i % 2 == 0) ? 0 : COLOR_FLY);
-    matrix.show();
-    delay(100);
-  }
   grid[x][y] = CELL_EMPTY;
 
-  // 파리 1마리 처치 -> 기본속도의 0.2배씩 누적 가속
-  // 속도배율 = 1 + 0.2 * 잡은수  (예: 1마리=1.2배, 5마리=2.0배)
+  // 파리 1마리 처치 -> 기본속도의 0.1배씩 누적 가속
+  // 속도배율 = 1 + 0.1 * 잡은수  (예: 1마리=1.1배, 10마리=2.0배)
   fliesCaught++;
   moveInterval = BASE_MOVE_INTERVAL / (1.0 + SPEED_UP_STEP * fliesCaught);
   if (moveInterval < MIN_MOVE_INTERVAL) moveInterval = MIN_MOVE_INTERVAL;
+
+  drawScene();  // 즉시 화면 반영 (파리 바로 사라짐)
 }
 
 // 전체 화면 다시 그리기
