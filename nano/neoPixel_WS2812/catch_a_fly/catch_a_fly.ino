@@ -73,12 +73,11 @@ int charDir = 1;   // 이동 방향 (+1: 오른쪽, -1: 왼쪽)
 // ===== 타이밍 / 입력 =====
 unsigned long lastMove = 0;
 
-// 스위치 입력: D7 핀 체인지 인터럽트(PCINT)로 눌림을 하드웨어 래치.
-// matrix.show()가 인터럽트를 끄는 동안 눌러도 show() 종료 즉시 ISR이 처리 -> 빠른 연타에도 놓침 없음.
-const unsigned long DEBOUNCE_MS = 8;       // 바운스 무시 시간 (짧아야 빠른 연타 가능)
-volatile bool s_pressLatched = false;      // ISR이 확정한 새 눌림 (loop에서 소비)
-volatile bool s_armed = true;              // 뗀 상태에서만 새 눌림 허용 (유령/오토파이어 방지)
-volatile unsigned long s_lastAcceptMs = 0; // 마지막으로 처리한 상태변화 시각
+// 스위치 디바운스 (상태 안정화 방식: 바운스로 인한 유령 입력/입력 누락 방지)
+int rawSwitch = HIGH;                 // 직전 원시 읽음값
+int debouncedSwitch = HIGH;           // 디바운스 확정 상태 (눌리면 LOW)
+unsigned long lastBounceMs = 0;       // 마지막 원시값 변화 시각
+const unsigned long DEBOUNCE_MS = 8;  // 이 시간만큼 안정되면 확정 (짧아야 연타 가능)
 
 // 특수아이템 깜빡임 애니메이션
 int lastBlinkIdx = -1;                // 마지막으로 그린 깜빡임 색 인덱스
@@ -90,11 +89,6 @@ void setup() {
   matrix.clear();
 
   pinMode(SWITCH_PIN, INPUT_PULLUP);
-
-  // D7(PCINT23) 핀 체인지 인터럽트 활성화
-  PCIFR  |= (1 << PCIF2);    // 대기 중인 플래그 정리
-  PCICR  |= (1 << PCIE2);    // PORTD 핀 체인지 인터럽트 그룹 켜기
-  PCMSK2 |= (1 << PCINT23);  // D7만 인터럽트 대상으로
 
   randomSeed(analogRead(A0));  // 연결 안된 아날로그 핀 노이즈로 시드 생성
 
@@ -150,32 +144,23 @@ void initFlies() {
   }
 }
 
-// ISR이 래치한 눌림을 소비 (실제 판정은 pressAction)
+// 스위치 입력 처리 (상태 안정화 디바운스)
+// 원시값이 DEBOUNCE_MS 이상 안정된 뒤에만 확정 상태로 반영 -> 바운스 튐이 유령 입력을
+// 만들지 못하므로, 유령 입력이 디바운스 창을 잡아먹어 다음 진짜 입력이 씹히는 문제가 사라짐.
 void handleSwitch() {
-  bool pressed;
-  noInterrupts();               // 래치 읽고 지우는 동안만 잠깐 인터럽트 차단
-  pressed = s_pressLatched;
-  s_pressLatched = false;
-  interrupts();
+  int reading = digitalRead(SWITCH_PIN);
 
-  if (pressed) pressAction();
-}
+  if (reading != rawSwitch) {   // 원시값이 바뀌면 안정화 타이머 리셋
+    rawSwitch = reading;
+    lastBounceMs = millis();
+  }
 
-// D7 핀 변화 인터럽트: 바운스를 걸러 유효한 눌림만 래치.
-// show()로 인터럽트가 꺼진 동안 눌러도, 하드웨어가 플래그를 기억했다가 show() 종료 즉시 여기가 실행됨.
-ISR(PCINT2_vect) {
-  unsigned long now = millis();
-  if (now - s_lastAcceptMs < DEBOUNCE_MS) return;  // 바운스 구간은 무시
-
-  if (digitalRead(SWITCH_PIN) == LOW) {   // 눌림
-    if (s_armed) {
-      s_pressLatched = true;   // 새 눌림 확정
-      s_armed = false;         // 뗄 때까지 추가 눌림 금지 (유령/오토파이어 방지)
-      s_lastAcceptMs = now;
+  // 값이 충분히 안정되면 확정 상태로 반영
+  if ((millis() - lastBounceMs) > DEBOUNCE_MS && reading != debouncedSwitch) {
+    debouncedSwitch = reading;
+    if (debouncedSwitch == LOW) {   // 확정된 눌림
+      pressAction();
     }
-  } else {                     // 뗌
-    s_armed = true;            // 다시 눌림 허용
-    s_lastAcceptMs = now;
   }
 }
 
