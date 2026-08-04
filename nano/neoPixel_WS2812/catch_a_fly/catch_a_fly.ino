@@ -57,12 +57,16 @@ const uint16_t SPECIAL_COLORS[] = {
 const int NUM_SPECIAL_COLORS = sizeof(SPECIAL_COLORS) / sizeof(SPECIAL_COLORS[0]);
 const unsigned long SPECIAL_BLINK_MS = 200;  // 색 전환 주기 (작을수록 빠르게 깜빡)
 
+// 리스타트 아이템: 마지막 줄에 1개(특수아이템과 동일한 3색 깜빡임). 먹으면 처음 위치로 이동(판 유지) + 속도 리셋
+const int RESTART_ROW = MAX_HEIGHT - 1;                     // 마지막 줄 (인덱스 7)
+
 // ===== 셀 상태 =====
 #define CELL_EMPTY   0
 #define CELL_FLY     1
 #define CELL_YELLOW  2
-#define CELL_SPECIAL 3   // 특수아이템
+#define CELL_SPECIAL 3   // 특수아이템 (속도 리셋)
 #define CELL_CAUGHT  4   // 이미 처리됨(파리 잡힘/아이템 사용) - 소등, 노란색 불가
+#define CELL_RESTART 5   // 리스타트 아이템 (보라, 마지막 줄): 처음 위치로 + 속도 리셋
 uint8_t grid[MAX_WIDTH][MAX_HEIGHT];
 
 // ===== 캐릭터 상태 =====
@@ -142,6 +146,13 @@ void initFlies() {
     } while (grid[x][y] != CELL_EMPTY);
     grid[x][y] = CELL_SPECIAL;
   }
+
+  // 리스타트 아이템(보라): 마지막 줄에 1개, 파리와 겹치지 않는 랜덤 열에
+  int rx;
+  do {
+    rx = random(MAX_WIDTH);
+  } while (grid[rx][RESTART_ROW] != CELL_EMPTY);
+  grid[rx][RESTART_ROW] = CELL_RESTART;
 }
 
 // 스위치 입력 처리 (상태 안정화 디바운스)
@@ -170,6 +181,8 @@ void pressAction() {
     catchFly(charX, charY);   // 위치 일치: 파리 잡기 (즉시 제거)
   } else if (grid[charX][charY] == CELL_SPECIAL) {
     useSpecial(charX, charY); // 특수아이템: 속도 초기화
+  } else if (grid[charX][charY] == CELL_RESTART) {
+    useRestart(charX, charY); // 리스타트 아이템: 처음 위치로 + 속도 리셋
   } else if (grid[charX][charY] == CELL_EMPTY) {
     grid[charX][charY] = CELL_YELLOW;  // 헛스윙: 노란색 표시
     yellowCount++;
@@ -219,6 +232,20 @@ void useSpecial(int x, int y) {
   drawScene();
 }
 
+// 리스타트 아이템 사용: 캐릭터를 처음 위치로 이동(판/점수는 그대로 유지) + 속도 리셋
+void useRestart(int x, int y) {
+  grid[x][y] = CELL_CAUGHT;          // 아이템 소비
+
+  charX = 0;                         // 처음 위치(좌상단)로
+  charY = 0;
+  charDir = 1;
+  moveInterval = BASE_MOVE_INTERVAL; // 처음 속도로
+  speedFlies = 0;                    // 가속 카운터 리셋
+  lastMove = millis();               // 이동 타이머 리셋 (즉시 튀지 않게)
+
+  drawScene();
+}
+
 // 전체 화면 다시 그리기
 void drawScene() {
   matrix.clear();
@@ -229,8 +256,8 @@ void drawScene() {
         matrix.drawPixel(x, y, COLOR_FLY);
       } else if (grid[x][y] == CELL_YELLOW) {
         matrix.drawPixel(x, y, COLOR_YELLOW);
-      } else if (grid[x][y] == CELL_SPECIAL) {
-        // 초록/주황/보라 3색 순환 깜빡임
+      } else if (grid[x][y] == CELL_SPECIAL || grid[x][y] == CELL_RESTART) {
+        // 초록/주황/보라 3색 순환 깜빡임 (특수/리스타트 아이템 공통)
         int idx = (millis() / SPECIAL_BLINK_MS) % NUM_SPECIAL_COLORS;
         matrix.drawPixel(x, y, SPECIAL_COLORS[idx]);
       }
