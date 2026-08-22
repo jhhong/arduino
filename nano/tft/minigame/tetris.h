@@ -446,6 +446,33 @@ void rotate() {
 }
 
 // ---------------
+// 하드 드롭 - 조각을 더 내려갈 수 없는 곳까지 한 번에 내린다
+// ---------------
+void hardDrop() {
+  // hittingBottom() 을 먼저 보는 순서를 지켜야 한다. 바닥에 닿은 상태에서
+  // isShapeColliding() 을 부르면 grid 배열 밖(20번 행)을 읽는다.
+  while (!gameIsOver && !hittingBottom() && !isShapeColliding()) {
+    gravity(true);
+  }
+
+  if (gameIsOver) {
+    return;
+  }
+
+  // 착지 처리를 여기서 끝낸다.
+  // 이걸 메인 루프에 맡기면, 루프 맨 앞의 낙하 타이머가 한 번 더 돌면서
+  // 이미 내려앉은 조각을 바닥 아래로 한 칸 더 밀어넣는다.
+  gravity(false);
+  detectCurrentShapeCollision();
+
+  lastX = xOffset;
+  lastY = yOffset;
+  stamp = millis();
+
+  beep(300, 40);
+}
+
+// ---------------
 // 조이스틱
 // ---------------
 void joystickMovement() {
@@ -477,9 +504,9 @@ void joystickMovement() {
     }
   }
 
-  // down (빠르게 내리기)
+  // down (하드 드롭 - 바닥까지 한 번에)
   //
-  // 원래 코드는 여기가 두 군데 잘못돼 있어서 아래로는 사실상 동작하지 않았다.
+  // 원래 코드는 여기가 세 군데 문제였다.
   //
   // 1) 문턱값이 JOY_FULL(250) 이었다. 좌/우는 JOY_DEADZONE(50) 을 쓰는데
   //    아래만 조이스틱을 끝까지 밀어야 했고, 모듈에 따라 중립에서 250 만큼
@@ -492,8 +519,14 @@ void joystickMovement() {
   //    그러면 조이스틱을 중립으로 되돌리기 전까지 계속 return 해서 아래는 물론
   //    회전(아래쪽 click 처리)까지 통째로 막혔다.
   //
-  // 그래서 "새 조각이 나왔으면 중립으로 한 번 돌아와야 다시 인정" 을
-  // 잠금 플래그로 따로 두고, lastYoffset 은 항상 갱신한다.
+  // 3) 반응하더라도 stamp -= level 은 "한 칸" 내리는 것이라, DOWN_DELAY(150ms)
+  //    마다 한 칸씩 = 20칸짜리 판을 내려가는데 3초가 넘게 걸렸다. 눌러도
+  //    바닥에 꽂히지 않고 조금 빨라지기만 하는 것처럼 보였다.
+  //
+  // 그래서 아래로 기울이면 바닥까지 한 번에 내리고,
+  // "새 조각이 나왔으면 중립으로 한 번 돌아와야 다시 인정" 을 잠금 플래그로
+  // 따로 둔다. (이게 없으면 계속 기울이고 있을 때 새 조각마다 즉시 꽂혀서
+  //  손쓸 새도 없이 게임이 끝난다)
   if (yOffset < lastYoffset) {
     downLocked = true;
   }
@@ -505,8 +538,9 @@ void joystickMovement() {
   }
 
   if (!downLocked && downward > JOY_DEADZONE && (now - lastDown) > DOWN_DELAY) {
-    stamp -= level;
     lastDown = now;
+    hardDrop();
+    return;   // 조각이 바뀌었으니 이번 호출에서는 회전 처리를 건너뛴다
   }
 
   // click (회전)

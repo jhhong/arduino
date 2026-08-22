@@ -46,7 +46,7 @@ const char hintA1[] PROGMEM = "JOYSTICK = TURN";
 const char hintA2[] PROGMEM = "JOYSTICK = SLIDE";
 const char hintA3[] PROGMEM = "JOYSTICK = MOVE";
 const char hintA4[] PROGMEM = "JOYSTICK = MOVE";
-const char hintA5[] PROGMEM = "JOYSTICK = MOVE";
+const char hintA5[] PROGMEM = "DOWN = HARD DROP";
 const char hintA6[] PROGMEM = "AVOID THE PIPES";
 
 const char hintB0[] PROGMEM = "BUTTON = LAUNCH";
