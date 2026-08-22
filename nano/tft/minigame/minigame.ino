@@ -27,7 +27,7 @@
 #define HINT_Y            126   // 조작법 첫 줄
 #define BEST_Y            150
 
-#define MENU_REPEAT_MS    200   // 조이스틱을 계속 기울이고 있을 때 이동 간격
+#define MENU_REPEAT_MS    300   // 조이스틱을 계속 기울이고 있을 때 이동 간격
 
 // 글자를 RAM 이 아니라 플래시에 둔다. 6개 게임의 이름과 조작법을 다 합치면
 // 250바이트가 넘는데, 그만큼을 RAM 에서 빼앗기지 않으려는 것.
@@ -156,8 +156,8 @@ void menuLoop() {
   // 직전 화면(게임 오버 등)에서 누른 버튼이 그대로 넘어오지 않게 대기.
   waitForRelease();
 
-  byte lastDir = DIR_NONE;
   unsigned long lastMove = millis();
+  unsigned long neutralSince = millis();
 
   while (true) {
     if (buttonDown()) {
@@ -169,16 +169,24 @@ void menuLoop() {
     byte d = joyDir();
 
     if (d != DIR_UP && d != DIR_DOWN) {
-      lastDir = DIR_NONE;
+      if (neutralSince == 0) {
+        neutralSince = millis();
+      }
+
       continue;
     }
 
-    // 새로 기울였을 때, 또는 계속 기울이고 있으면 일정 간격마다 한 칸.
-    if (d == lastDir && millis() - lastMove < MENU_REPEAT_MS) {
+    // 중립이 JOY_NEUTRAL_MS 이상 이어진 뒤에 기울인 것만 "새로 기울였다"로 본다.
+    // 문턱 근처로 살짝 기울이면 방향과 DIR_NONE 이 번갈아 읽히는데, 그걸
+    // 새 입력으로 인정하면 한 번 기울인 게 목록 끝까지 주르륵 넘어간다.
+    bool fresh = (neutralSince != 0) && (millis() - neutralSince >= JOY_NEUTRAL_MS);
+    neutralSince = 0;
+
+    // 새로 기울인게 아니면(계속 기울이고 있으면) 일정 간격마다 한 칸.
+    if (!fresh && millis() - lastMove < MENU_REPEAT_MS) {
       continue;
     }
 
-    lastDir = d;
     lastMove = millis();
 
     byte prev = selected;

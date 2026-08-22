@@ -53,8 +53,8 @@ byte lives;
 byte level;
 byte crossings;
 
-byte lastDir;
 unsigned long lastHop;
+unsigned long neutralSince;   // 조이스틱이 중립으로 돌아온 시각 (0 이면 기울어진 상태)
 
 // ---------------
 // 좌표
@@ -261,8 +261,8 @@ void resetPlayer() {
   playerRow = START_ROW;
   oldCol = playerCol;
   oldRow = playerRow;
-  lastDir = DIR_NONE;
   lastHop = millis();
+  neutralSince = millis();
 }
 
 void resetGame() {
@@ -320,16 +320,24 @@ void handleInput() {
   byte d = joyDir();
 
   if (d == DIR_NONE) {
-    lastDir = DIR_NONE;
+    if (neutralSince == 0) {
+      neutralSince = millis();
+    }
+
     return;
   }
 
-  // 방향을 새로 잡았을 때, 또는 계속 기울이고 있으면 일정 간격마다 한 칸.
-  if (d == lastDir && millis() - lastHop < HOP_REPEAT_MS) {
+  // 중립이 JOY_NEUTRAL_MS 이상 이어진 뒤에 기울인 것만 "새로 기울였다"로 본다.
+  // 문턱 근처로 살짝 기울이면 방향과 DIR_NONE 이 번갈아 읽혀서, 그걸 새 입력으로
+  // 인정하면 한 번 기울인 것에 개구리가 여러 칸을 건너뛴다.
+  bool fresh = (neutralSince != 0) && (millis() - neutralSince >= JOY_NEUTRAL_MS);
+  neutralSince = 0;
+
+  // 새로 기울인게 아니면(계속 기울이고 있으면) 일정 간격마다 한 칸.
+  if (!fresh && millis() - lastHop < HOP_REPEAT_MS) {
     return;
   }
 
-  lastDir = d;
   lastHop = millis();
 
   oldCol = playerCol;

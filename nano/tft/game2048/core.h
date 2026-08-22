@@ -81,6 +81,12 @@ void waitForPress() {
 #define JOY_DEADZONE      50    // 중립에서 이만큼 벗어나야 입력으로 인정
 #define JOY_FULL          250   // 이만큼 벗어나면 끝까지 기울인 것으로 본다
 
+// "한 칸씩" 움직이는 화면(메뉴, 크로시)에서 손을 뗐다고 인정하는 시간.
+// 판정 문턱(JOY_DEADZONE) 근처로 살짝 기울이면 DIR_NONE 과 방향이 번갈아
+// 읽히는데, 그 순간적인 떨림을 "새로 기울였다"로 보면 한 번 기울인 것이
+// 수십 번의 입력으로 처리된다. 중립이 이만큼 이어져야 새 입력으로 본다.
+#define JOY_NEUTRAL_MS    60
+
 short joyCenterX = 512;
 short joyCenterY = 512;
 
