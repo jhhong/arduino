@@ -33,6 +33,9 @@ const int16_t BRICK_Y0  = 16;
 const int16_t PADDLE_W  = 24;
 const int16_t PADDLE_H  = 4;
 const int16_t PADDLE_Y  = TFTH - 12;
+// 한 프레임에 패들이 움직일 수 있는 최대 픽셀. 조작이 둔하면 올리고,
+// 너무 홱홱 움직이면 내린다. (여기서는 3px * 71fps = 초당 약 210px)
+const int16_t PADDLE_SPEED = 3;
 
 // 공
 const int16_t BALL_SIZE = 3;
@@ -241,9 +244,9 @@ bool playBall() {
     nextFrame = millis() + FRAME_MS;
 
     // ===============
-    // 입력 - 기울인 만큼의 위치로 패들이 따라간다
+    // 입력 - 기울인 쪽으로 패들이 따라간다
     // ===============
-    paddleX = joyPosX(TFTW - PADDLE_W);
+    paddleX = joyFollowX(paddleX, TFTW - PADDLE_W, PADDLE_SPEED);
 
     if (ballHeld) {
       // 발사 전에는 공이 패들 위에 붙어있다.

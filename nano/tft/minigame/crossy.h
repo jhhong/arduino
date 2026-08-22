@@ -32,7 +32,7 @@ const byte MAX_CARS    = 3;
 const byte START_LIVES = 3;
 const unsigned int FRAME_MS = 33;     // 약 30fps
 
-const unsigned long HOP_REPEAT_MS = 220;  // 조이스틱을 계속 기울이고 있을 때 연속 이동 간격
+const unsigned long HOP_REPEAT_MS = 300;  // 조이스틱을 계속 기울이고 있을 때 연속 이동 간격
 
 const unsigned int GOAL_SCORE = 10;
 const uint16_t SAFE_COLOR = RGB565(20, 70, 30);

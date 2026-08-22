@@ -33,7 +33,7 @@
 #define JUMP_VEL          -51     // 약 40px 높이까지 올라간다
 #define SUPER_JUMP_VEL    -66     // 버튼을 누르고 있었을 때
 #define MAX_FALL          80
-#define MOVE_MAX          56      // 끝까지 기울였을 때 좌우 속도 (3.5px/프레임)
+#define MOVE_MAX          40      // 끝까지 기울였을 때 좌우 속도 (2.5px/프레임)
 
 #define SCROLL_LINE       58      // 이 선보다 위로 올라가면 화면이 따라 내려간다
 #define FRAME_MS          20

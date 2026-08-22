@@ -37,7 +37,7 @@ const int16_t GRAVITY        = 2;     // 프레임당 속도 증가
 const int16_t JUMP_VEL       = -51;   // 약 40px 높이까지 올라간다
 const int16_t SUPER_JUMP_VEL = -66;   // 버튼을 누르고 있었을 때
 const int16_t MAX_FALL       = 80;
-const int16_t MOVE_MAX       = 56;    // 끝까지 기울였을 때 좌우 속도 (3.5px/프레임)
+const int16_t MOVE_MAX       = 40;    // 끝까지 기울였을 때 좌우 속도 (2.5px/프레임)
 
 const int16_t SCROLL_LINE = 58;       // 이 선보다 위로 올라가면 화면이 따라 내려간다
 const unsigned int FRAME_MS = 20;

@@ -148,6 +148,26 @@ int16_t joyPosX(int16_t range) {
   return (int32_t)(JOY_FULL - leftward) * range / (2L * JOY_FULL);
 }
 
+// joyPosX 를 그대로 쓰면 조이스틱이 가리키는 자리로 한 번에 순간이동한다.
+// 이동 폭(104px 남짓)이 ADC 값 ±JOY_FULL 에 다 눌러담겨 있어서, 살짝만 튕겨도
+// 한 프레임에 수십 픽셀이 건너뛰어진다.
+// 그래서 목표 위치까지 한 프레임에 maxStep 픽셀씩만 따라가게 한다.
+// current 에는 지금 위치를 넣고, 돌려받은 값을 다시 지금 위치로 쓰면 된다.
+int16_t joyFollowX(int16_t current, int16_t range, int16_t maxStep) {
+  int16_t diff = joyPosX(range) - current;
+
+  // 1px 이내 차이는 무시. 가만히 쥐고 있는 손의 떨림과 ADC 잡음까지
+  // 따라가면 제자리에서 계속 덜덜거린다.
+  if (diff >= -1 && diff <= 1) {
+    return current;
+  }
+
+  if (diff > maxStep) diff = maxStep;
+  if (diff < -maxStep) diff = -maxStep;
+
+  return current + diff;
+}
+
 // ---------------
 // 소리 (부저 D7)
 // ---------------

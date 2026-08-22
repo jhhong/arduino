@@ -28,7 +28,7 @@
 #define START_LIVES       3
 #define FRAME_MS          33            // 약 30fps
 
-#define HOP_REPEAT_MS     220           // 조이스틱을 계속 기울이고 있을 때 연속 이동 간격
+#define HOP_REPEAT_MS     300           // 조이스틱을 계속 기울이고 있을 때 연속 이동 간격
 
 #define GOAL_SCORE        10
 #define SAFE_COLOR        tft.Color565(20, 70, 30)

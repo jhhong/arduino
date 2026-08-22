@@ -32,6 +32,8 @@ const int16_t STEP_DOWN = 6;
 const int16_t SHIP_W = 12;
 const int16_t SHIP_H = 8;
 const int16_t SHIP_Y = TFTH - 14;
+// 한 프레임에 함선이 움직일 수 있는 최대 픽셀. (3px * 62fps = 초당 약 190px)
+const int16_t SHIP_SPEED = 3;
 
 // 총알
 const int16_t SHOT_W     = 2;
@@ -437,7 +439,7 @@ bool playWave() {
     // ===============
     // 입력
     // ===============
-    shipX = joyPosX(TFTW - SHIP_W);
+    shipX = joyFollowX(shipX, TFTW - SHIP_W, SHIP_SPEED);
 
     if (buttonDown() && !bullet.active) {
       bullet.x = shipX + SHIP_W / 2 - 1;

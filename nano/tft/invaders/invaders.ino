@@ -29,6 +29,8 @@
 #define SHIP_W            12
 #define SHIP_H            8
 #define SHIP_Y            (TFTH - 14)
+// 한 프레임에 함선이 움직일 수 있는 최대 픽셀. (3px * 62fps = 초당 약 190px)
+#define SHIP_SPEED        3
 
 // 총알
 #define SHOT_W            2
@@ -439,7 +441,7 @@ bool playWave() {
     // ===============
     // 입력
     // ===============
-    shipX = joyPosX(TFTW - SHIP_W);
+    shipX = joyFollowX(shipX, TFTW - SHIP_W, SHIP_SPEED);
 
     if (buttonDown() && !bullet.active) {
       bullet.x = shipX + SHIP_W / 2 - 1;
