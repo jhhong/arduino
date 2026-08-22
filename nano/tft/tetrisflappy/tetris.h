@@ -27,19 +27,29 @@ uint16_t getCurrentShapeColor() {
 }
 
 //블록 1개를 특정 색으로 칠하기.
-void fillBlock(byte x, byte y, uint16_t color) {
+// 좌표가 보드 밖이면 아무것도 하지 않는다. 새 블록은 yOffset = -4 에서 시작하고
+// 지울 때 쓰는 lastXoffset 은 보드 폭을 넘을 수 있어서, 이 검사가 없으면
+// grid 배열 밖(= xOffset 같은 다른 전역변수)을 덮어써서 블록이 멋대로 움직인다.
+void fillBlock(short x, short y, uint16_t color) {
+  if (x < 0 || x >= BOARD_WIDTH || y < 0 || y >= BOARD_HEIGHT) {
+    return;
+  }
+
   grid[x][y] = color;
   tft.fillRect(1 + BOARD_OFFSET_X + (x * BLOCK_SIZE), 1 + BOARD_OFFSET_Y + (y * BLOCK_SIZE), BLOCK_SIZE - 1, BLOCK_SIZE - 1, color);
 }
 
+// 블록의 가장 아래쪽 행이 보드 바닥에 닿았는지.
+// 행 전체를 한번에 검사해서 0번 행과 0번 비트(x = 3)도 빠뜨리지 않고,
+// 어떤 경우에도 값을 반환한다. (예전 코드는 둘 다 건너뛰고 return 도 없었다)
 bool hittingBottom() {
-  for (int i = 3; i != 0; i--) {
-    for (int j = 3; j != 0; j--) {
-      if (bitRead(shapes[currentShape][currentRotation][i], j) == 1) {
-        return (i + 1 + yOffset) >= BOARD_HEIGHT;
-      }
+  for (short i = 3; i >= 0; i--) {
+    if (shapes[currentShape][currentRotation][i] != 0) {
+      return (i + 1 + yOffset) >= BOARD_HEIGHT;
     }
   }
+
+  return false;
 }
 
 void drawNextShape() {
@@ -86,6 +96,11 @@ void waitForClick() {
 
 void gameOver() {
 
+  noTone(BUZZER);
+
+  // 최고 기록이면 영구 저장.
+  saveHighScore(EEPROM_TETRIS_ADDR, score);
+
   tft.setTextSize(1);
   tft.setTextColor(COLOR_WHITE);
   tft.setCursor(GAMEOVER_X, GAMEOVER_Y);
@@ -95,16 +110,8 @@ void gameOver() {
 
   waitForClick();
 
-  tft.fillRect(90, 20, 25, 20, COLOR_BLACK);
-  for (byte i = 0; i < BOARD_WIDTH; i++) {
-    for (byte j = 0; j < BOARD_HEIGHT; j++) {
-      fillBlock(i, j, COLOR_BLACK);
-    }
-  }
-
-  score = 0;
-  redrawScore();
-  nextShape();
+  // 게임 선택 화면으로 돌아간다.
+  returnToMenu = true;
 }
 
 bool isShapeColliding() {
@@ -182,6 +189,10 @@ void checkForTetris() {
 
 void detectCurrentShapeCollision() {
   if (hittingBottom() || isShapeColliding()) {
+    if (returnToMenu) {
+      return;
+    }
+
     checkForTetris();
     nextShape();
   }
@@ -287,6 +298,11 @@ bool canRotate() {
             return false;
           }
 
+          // 보드 위쪽(아직 내려오는 중)은 항상 비어있으므로 검사 불필요.
+          // 검사하면 grid 배열 밖을 읽어서 회전이 엉뚱하게 막힌다.
+          if ((yOffset + i) < 0) {
+            continue;
+          }
 
           if (grid[xOffset + x][yOffset + i] != COLOR_BLACK) {
             if (bitRead(shapes[currentShape][currentRotation][i], j) != 1) {
@@ -324,8 +340,9 @@ void rotate() {
 }
 
 void joystickMovement() {
-  int joyX = analogRead(JOY_X);
-  int joyY = analogRead(JOY_Y);
+  // 측정된 중립값 기준으로 판정. (양수면 왼쪽/아래쪽)
+  short leftward = joyLeftward();
+  short downward = joyDownward();
   unsigned long now = millis();
 
   static unsigned long lastMove = now;
@@ -333,7 +350,7 @@ void joystickMovement() {
   static bool hasClicked = false;
 
   // left
-  if (joyX > 550 && xOffset > 0 && (now - lastMove) > (MOVE_DELAY + (joyX > 1015 ? 0 : MOVE_DELAY * 5))) {
+  if (leftward > JOY_DEADZONE && xOffset > 0 && (now - lastMove) > (MOVE_DELAY + (leftward > JOY_FULL ? 0 : MOVE_DELAY * 5))) {
     if (canMove(true)) {
       lastMove = now;
       xOffset--;
@@ -341,7 +358,7 @@ void joystickMovement() {
   }
 
   // right
-  if (joyX < 440 && xOffset < (BOARD_WIDTH - getShapeWidth()) && (now - lastMove) > (MOVE_DELAY + (joyX < 10 ? 0 : MOVE_DELAY * 5))) {
+  if (leftward < -JOY_DEADZONE && xOffset < (BOARD_WIDTH - getShapeWidth()) && (now - lastMove) > (MOVE_DELAY + (leftward < -JOY_FULL ? 0 : MOVE_DELAY * 5))) {
     if (canMove(false)) {
       lastMove = now;
       xOffset++;
@@ -349,12 +366,12 @@ void joystickMovement() {
   }
 
   // down
-  if (yOffset < lastYoffset && !(joyY > 490 && joyY < 520)) {
+  if (yOffset < lastYoffset && abs(downward) > JOY_DEADZONE) {
     return;
   }
 
   lastYoffset = yOffset;
-  if (joyY < 15 && lastDown - now > DOWN_DELAY) {
+  if (downward > JOY_FULL && (now - lastDown) > DOWN_DELAY) {
     stamp -= level;
     lastDown = now;
   }
@@ -385,6 +402,16 @@ void setup_tetris() {
 
   randomSeed(analogRead(A2));
 
+  // 새 게임을 위해 상태 초기화. (게임 선택 화면에서 다시 들어올 수 있음)
+  score = 0;
+  level = 300;
+  currentRotation = 0;
+  yOffset = lastY = -4;
+  xOffset = lastX = 0;
+  lastDown = 0;
+  currentNote = 0;
+  toneStamp = millis();
+
   shapeColors[SHAPE_I] = SHAPE_I_COLOR;
   shapeColors[SHAPE_J] = SHAPE_J_COLOR;
   shapeColors[SHAPE_L] = SHAPE_L_COLOR;
@@ -407,7 +434,9 @@ void setup_tetris() {
   centerWrite("(c) 1989 Jonas Jensen", txtYpos + 100, COLOR_WHITE);
 
   waitForClick();
-  tft.fillScreen(COLOR_BLACK);
+
+  // 게임 시작. 최고 기록을 1초간 보여준다.
+  showHighScore("TETRIS", EEPROM_TETRIS_ADDR);
 
   tft.setCursor(SCORE_X, SCORE_Y);
   tft.print("SCORE");
@@ -448,6 +477,10 @@ void loop_tetris(){
     detectCurrentShapeCollision();
     lastX = xOffset;
     lastY = yOffset;
+  }
+
+  if (returnToMenu) {
+    return;
   }
 
   joystickMovement();

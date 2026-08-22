@@ -13,30 +13,38 @@ unsigned short gameSelectYpos = (tft.height() / 2) - 30;
 
 GameState currentGame = FLAPPY_BIRD;
 
-void setup() {
+// 게임 선택 화면. 처음 시작할 때와 게임이 끝날 때마다 호출된다.
+void selectGame() {
 
-  tft.initR(INITR_BLACKTAB);
+  // 직전 화면(GAME OVER 등)에서 누른 버튼이 그대로 넘어오지 않게 대기.
+  waitForRelease();
+
   tft.fillScreen(COLOR_BLACK);
-  pinMode(PUSH_BUTTON, INPUT_PULLUP);
+  tft.setTextSize(1);
 
-  Serial.begin(9600);
-
+  currentGame = TETRIS;
   centerWrite("TETRIS", gameSelectYpos, COLOR_YELLOW);
   centerWrite("FLAPPY BIRD", gameSelectYpos + 10, COLOR_WHITE);
   centerWrite("FROM SEOBIN", gameSelectYpos + 90, COLOR_WHITE);
 
-  currentGame = TETRIS;
+  // 첫 화면이 뜬 시점의 값을 조이스틱 중립값으로 삼는다. (맨 처음 한 번만)
+  static bool joyCalibrated = false;
+  if (!joyCalibrated) {
+    joyCalibrated = true;
+    calibrateJoystick();
+  }
 
-  while(true) {
-    int joyY = analogRead(JOY_Y);
+  while (true) {
+    // 측정된 중립값 기준으로 판정. (양수면 아래쪽)
+    short downward = joyDownward();
 
-    if (joyY < 490 ) {
+    if (downward > JOY_DEADZONE && currentGame != FLAPPY_BIRD) {
       centerWrite("TETRIS", gameSelectYpos, COLOR_WHITE);
       centerWrite("FLAPPY BIRD", gameSelectYpos + 10, COLOR_YELLOW);
       currentGame = FLAPPY_BIRD;
     }
 
-    if (joyY > 540) {
+    if (downward < -JOY_DEADZONE && currentGame != TETRIS) {
       centerWrite("TETRIS", gameSelectYpos, COLOR_YELLOW);
       centerWrite("FLAPPY BIRD", gameSelectYpos + 10, COLOR_WHITE);
       currentGame = TETRIS;
@@ -47,23 +55,46 @@ void setup() {
     }
   }
 
+  // 선택할 때 누른 버튼이 게임 시작 화면까지 넘어가지 않게 대기.
+  waitForRelease();
+
   tft.fillScreen(COLOR_BLACK);
   Serial.println(currentGame);
 
-  if(currentGame == TETRIS) {
+  returnToMenu = false;
+
+  if (currentGame == TETRIS) {
     setup_tetris();
   } else {
     setup_flappy();
   }
 }
 
+void setup() {
+
+  tft.initR(INITR_BLACKTAB);
+  tft.fillScreen(COLOR_BLACK);
+  pinMode(PUSH_BUTTON, INPUT_PULLUP);
+  pinMode(JOY_X, INPUT);
+  pinMode(JOY_Y, INPUT);
+
+  Serial.begin(9600);
+
+  selectGame();
+}
+
 void loop() {
-  
+
   loops++; // do not remove.
 
-  if(currentGame == TETRIS) {
+  if (currentGame == TETRIS) {
     loop_tetris();
   } else {
     loop_flappy();
+  }
+
+  // 게임이 끝나면 다시 게임 선택 화면으로.
+  if (returnToMenu) {
+    selectGame();
   }
 }

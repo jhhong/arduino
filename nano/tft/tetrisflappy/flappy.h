@@ -279,10 +279,14 @@ void game_start() {
   tft.println("ATMEGA328");
   tft.setCursor( TFTW2 - (12*3) - 1, TFTH2 + 34);
   tft.println("press button");
+  waitForRelease();
   while (1) {
     // wait for push button
     if ( !(PIND & (1<<PD2)) ) break;
   }
+
+  // 게임 시작. 최고 기록을 1초간 보여준다.
+  showHighScore("FLAPPY BIRD", EEPROM_FLAPPY_ADDR);
 
   // init game settings
   game_init();
@@ -304,6 +308,7 @@ void game_over() {
   tft.print(scoreFlappy);
   tft.setCursor( TFTW2 - (12*3), TFTH2 + 12);
   tft.println("press button");
+  waitForRelease();
   while (1) {
     // wait for push button
     if ( !(PIND & (1<<PD2)) ) break;
@@ -327,5 +332,12 @@ void setup_flappy() {
 void loop_flappy() {
   game_start();
   game_loop();
+
+  // 최고 기록이면 영구 저장.
+  saveHighScore(EEPROM_FLAPPY_ADDR, scoreFlappy);
+
   game_over();
+
+  // 게임 선택 화면으로 돌아간다.
+  returnToMenu = true;
 }
