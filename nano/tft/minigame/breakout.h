@@ -396,7 +396,13 @@ void playGame() {
 
     // 공이 화면 밖으로 나가면서 남긴 흔적 정리.
     tft.fillRect(0, PADDLE_Y - 10, TFTW, TFTH - (PADDLE_Y - 10), COLOR_BLACK);
+
+    // 패들과 공을 직접 그린다.
+    // drawBall() 은 "이전에 그린 자리와 달라졌을 때만" 그리는데, resetBall() 이
+    // 이전 자리를 지금 자리와 같게 맞춰버리기 때문에 그냥 두면 조이스틱을
+    // 움직여 공 위치가 바뀌기 전까지 공이 화면에 나타나지 않는다.
     tft.fillRect(paddleX, PADDLE_Y, PADDLE_W, PADDLE_H, COLOR_WHITE);
+    tft.fillRect(ballX, ballY, BALL_SIZE, BALL_SIZE, COLOR_WHITE);
     paddleOldX = paddleX;
   }
 }
