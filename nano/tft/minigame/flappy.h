@@ -54,6 +54,10 @@ const uint16_t FLOORCOL     = RGB565(246, 240, 163);
 const uint16_t GRASSCOL     = RGB565(141, 225, 87);
 const uint16_t GRASSCOL2    = RGB565(156, 239, 88);
 
+// 점수 색. 원래는 흰색이었는데 배경이 밝은 하늘색이라 밝기 차이가 거의 없어
+// 글자가 묻혔다. 짙은 남색이면 하늘색 위에서도, 관(밝은 초록) 위에서도 잘 보인다.
+const uint16_t SCORECOL     = RGB565(12, 36, 78);
+
 // 새 그림 (8x8). 원본은 RAM 배열이라 128바이트를 잡아먹었다.
 #define C0 BCKGRDCOL
 #define C1 RGB565(195, 165, 75)
@@ -96,6 +100,19 @@ inline void fastPixel(int16_t x, int16_t y, uint16_t color) {
   tft.pushColor(color);
 }
 
+// 점수를 화면 위쪽 가운데에 그린다.
+// 글자 크기 2 로 키웠기 때문에 자릿수가 늘면 폭도 늘어난다. 지울 때도 같은
+// 자리를 짚어야 해서, 그릴 때와 지울 때 모두 이 함수를 쓴다. (색만 다르게)
+void drawScore(unsigned int value, uint16_t color) {
+  char buf[6];
+  utoa(value, buf, 10);
+
+  tft.setTextSize(2);
+  tft.setTextColor(color);
+  tft.setCursor(TFTW2 - (int16_t)strlen(buf) * 6, 4);
+  tft.print(buf);
+}
+
 // 1/100 px 단위 속도를 정수 픽셀 이동량으로.
 //
 // 원본은 bird.y(정수) 에 float 속도를 더한 뒤 정수로 잘랐다. 즉 실제 이동량은
@@ -115,9 +132,6 @@ int16_t velToPixels(int16_t vel) {
 // ---------------
 void gameInit() {
   tft.fillScreen(BCKGRDCOL);
-
-  // 직전 화면(게임 오버 등)에서 키워둔 글자 크기가 남아있을 수 있다.
-  tft.setTextSize(1);
 
   score = 0;
 
@@ -250,19 +264,15 @@ void gameLoop() {
     } else if (birdX > pipeX + PIPEW - BIRDW && passedPipe) {
       passedPipe = false;
 
-      // 예전 점수를 배경색으로 덮어 지운다.
-      tft.setTextColor(BCKGRDCOL);
-      tft.setCursor(TFTW2, 4);
-      tft.print(score);
+      // 자릿수가 늘면 예전 글자가 삐져나오므로 배경색으로 덮어 지운다.
+      drawScore(score, BCKGRDCOL);
 
       score++;
       beep(1200, 30);
     }
 
-    tft.setTextSize(1);
-    tft.setTextColor(COLOR_WHITE);
-    tft.setCursor(TFTW2, 4);
-    tft.print(score);
+    // 관이 지나가면서 점수를 덮으므로 매 프레임 다시 그린다.
+    drawScore(score, SCORECOL);
   }
 }
 
