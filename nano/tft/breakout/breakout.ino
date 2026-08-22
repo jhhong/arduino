@@ -1,7 +1,7 @@
 // ---------------
 // BREAKOUT (벽돌깨기)
 // ---------------
-// 조이스틱 X축을 기울인 만큼 패들이 그 위치로 간다. (비례 제어)
+// 조이스틱을 기울이고 있는 동안 패들이 그 방향으로 움직인다. 놓으면 그 자리에 선다.
 // 버튼: 공 발사
 //
 // 화면 전체를 다시 그리지 않는다. 매 프레임 다시 그리는건 공과 패들뿐이고,
@@ -27,9 +27,9 @@
 #define PADDLE_W          24
 #define PADDLE_H          4
 #define PADDLE_Y          (TFTH - 12)
-// 한 프레임에 패들이 움직일 수 있는 최대 픽셀. 조작이 둔하면 올리고,
-// 너무 홱홱 움직이면 내린다. (여기서는 3px * 71fps = 초당 약 210px)
-#define PADDLE_SPEED      3
+// 끝까지 기울였을 때 패들이 한 프레임에 움직이는 픽셀. 살짝 기울이면 그만큼 느려진다.
+// 조작이 둔하면 올리고 너무 빠르면 내린다. (4px * 71fps = 초당 약 280px)
+#define PADDLE_SPEED      4
 
 // 공
 #define BALL_SIZE         3
@@ -240,7 +240,7 @@ bool playBall() {
     // ===============
     // 입력 - 기울인 쪽으로 패들이 따라간다
     // ===============
-    paddleX = joyFollowX(paddleX, TFTW - PADDLE_W, PADDLE_SPEED);
+    paddleX = joyMoveX(paddleX, TFTW - PADDLE_W, PADDLE_SPEED);
 
     if (ballHeld) {
       // 발사 전에는 공이 패들 위에 붙어있다.
@@ -347,7 +347,7 @@ void levelUp() {
   delay(700);
 
   resetBricks();
-  paddleX = joyPosX(TFTW - PADDLE_W);
+  paddleX = (TFTW - PADDLE_W) / 2;
   resetBall();
   drawField();
 
@@ -366,7 +366,7 @@ void playGame() {
   level = 1;
 
   resetBricks();
-  paddleX = joyPosX(TFTW - PADDLE_W);
+  paddleX = (TFTW - PADDLE_W) / 2;
   resetBall();
   drawField();
 

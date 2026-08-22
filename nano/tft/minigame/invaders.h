@@ -4,7 +4,7 @@
 // ---------------
 // SPACE INVADERS (스페이스 인베이더)
 // ---------------
-// 조이스틱 X축을 기울인 만큼 함선이 그 위치로 간다. 버튼: 발사.
+// 조이스틱을 기울이고 있는 동안 함선이 그 방향으로 움직인다. 버튼: 발사.
 // 적이 바닥에 닿거나 목숨이 다 떨어지면 끝.
 //
 // 적은 매 프레임이 아니라 "한 걸음씩" 움직인다. (원작과 같은 방식)
@@ -32,7 +32,7 @@ const int16_t STEP_DOWN = 6;
 const int16_t SHIP_W = 12;
 const int16_t SHIP_H = 8;
 const int16_t SHIP_Y = TFTH - 14;
-// 한 프레임에 함선이 움직일 수 있는 최대 픽셀. (3px * 62fps = 초당 약 190px)
+// 끝까지 기울였을 때 함선이 한 프레임에 움직이는 픽셀. (3px * 62fps = 초당 약 190px)
 const int16_t SHIP_SPEED = 3;
 
 // 총알
@@ -327,7 +327,7 @@ void resetField() {
   drawHud();
   drawFleet();
 
-  shipX = joyPosX(TFTW - SHIP_W);
+  shipX = (TFTW - SHIP_W) / 2;
   shipOldX = shipX;
   drawShipFull();
 
@@ -439,7 +439,7 @@ bool playWave() {
     // ===============
     // 입력
     // ===============
-    shipX = joyFollowX(shipX, TFTW - SHIP_W, SHIP_SPEED);
+    shipX = joyMoveX(shipX, TFTW - SHIP_W, SHIP_SPEED);
 
     if (buttonDown() && !bullet.active) {
       bullet.x = shipX + SHIP_W / 2 - 1;

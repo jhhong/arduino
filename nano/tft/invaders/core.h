@@ -143,35 +143,39 @@ byte joyDir() {
   return downward > 0 ? DIR_DOWN : DIR_UP;
 }
 
-// 기울인 정도를 0 ~ range 위치로 바꾼다. (패들처럼 비례 제어가 필요할 때)
-// 왼쪽 끝까지 기울이면 0, 오른쪽 끝까지 기울이면 range.
-int16_t joyPosX(int16_t range) {
+// 좌우로 움직이는 물체(패들, 함선)의 새 위치를 구한다.
+//
+// 기울인 정도를 화면 위치에 그대로 대응시키면(즉 "왼쪽 끝까지 기울이면 x=0")
+// 안 된다. 이 조이스틱은 손을 떼면 스프링으로 중앙에 돌아오는 모듈이라,
+// 놓는 순간 목표 위치가 화면 한가운데가 되어 패들이 가운데로 끌려간다.
+// 원작 벽돌깨기의 손잡이(가변저항)는 돌려놓은 자리에 그대로 머물기 때문에
+// 그런 대응이 성립했던 것이다.
+//
+// 그래서 기울기를 "속도"로 쓴다. 기울이고 있는 동안 그 방향으로 움직이고,
+// 놓으면 그 자리에 선다. 살짝 기울이면 느리게, 끝까지 기울이면 maxStep 만큼.
+int16_t joyMoveX(int16_t current, int16_t range, int16_t maxStep) {
   short leftward = joyLeftward();
+
+  if (leftward > -JOY_DEADZONE && leftward < JOY_DEADZONE) {
+    return current;
+  }
 
   if (leftward > JOY_FULL) leftward = JOY_FULL;
   if (leftward < -JOY_FULL) leftward = -JOY_FULL;
 
-  return (int32_t)(JOY_FULL - leftward) * range / (2L * JOY_FULL);
-}
+  int16_t step = -(int32_t)leftward * maxStep / JOY_FULL;
 
-// joyPosX 를 그대로 쓰면 조이스틱이 가리키는 자리로 한 번에 순간이동한다.
-// 이동 폭(104px 남짓)이 ADC 값 ±JOY_FULL 에 다 눌러담겨 있어서, 살짝만 튕겨도
-// 한 프레임에 수십 픽셀이 건너뛰어진다.
-// 그래서 목표 위치까지 한 프레임에 maxStep 픽셀씩만 따라가게 한다.
-// current 에는 지금 위치를 넣고, 돌려받은 값을 다시 지금 위치로 쓰면 된다.
-int16_t joyFollowX(int16_t current, int16_t range, int16_t maxStep) {
-  int16_t diff = joyPosX(range) - current;
-
-  // 1px 이내 차이는 무시. 가만히 쥐고 있는 손의 떨림과 ADC 잡음까지
-  // 따라가면 제자리에서 계속 덜덜거린다.
-  if (diff >= -1 && diff <= 1) {
-    return current;
+  // 기울였는데도 정수 나눗셈에서 0 이 되는 구간이 있다. 최소 1px 은 움직인다.
+  if (step == 0) {
+    step = (leftward > 0) ? -1 : 1;
   }
 
-  if (diff > maxStep) diff = maxStep;
-  if (diff < -maxStep) diff = -maxStep;
+  current += step;
 
-  return current + diff;
+  if (current < 0) current = 0;
+  if (current > range) current = range;
+
+  return current;
 }
 
 // ---------------
