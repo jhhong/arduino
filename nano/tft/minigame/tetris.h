@@ -41,8 +41,13 @@ const int16_t NEXTSHAPE_Y = SCORE_Y + 50;
 
 const unsigned int LINE_SCORE_VALUE = 100;
 
-const unsigned int MOVE_DELAY = 50;
-const unsigned int DOWN_DELAY = 150;
+// 좌우 이동 감도.
+// 새로 기울이면 즉시 한 칸 옮기고, 계속 기울이고 있으면 MOVE_FIRST_MS 를
+// 기다린 뒤부터 MOVE_REPEAT_MS 간격으로 자동 반복한다.
+// 한 칸만 옮기기 어려우면 MOVE_FIRST_MS 를 늘리고, 쭉 밀 때 답답하면
+// MOVE_REPEAT_MS 를 줄이면 된다.
+const unsigned int MOVE_FIRST_MS  = 260;
+const unsigned int MOVE_REPEAT_MS = 120;
 
 const byte SHAPE_COUNT = 7;
 
@@ -119,7 +124,6 @@ short lastX = 0;
 unsigned short level = 300;
 unsigned int score = 0;
 unsigned long stamp = 0;
-unsigned long lastDown = 0;
 
 bool gameIsOver = false;
 
@@ -472,6 +476,17 @@ void hardDrop() {
   beep(300, 40);
 }
 
+// 좌우로 한 칸 옮긴다. 옮길 수 없으면 아무것도 하지 않는다.
+void moveSide(byte dir) {
+  if (dir == DIR_LEFT) {
+    if (xOffset > 0 && canMove(true)) {
+      xOffset--;
+    }
+  } else if (xOffset < (BOARD_WIDTH - getShapeWidth()) && canMove(false)) {
+    xOffset++;
+  }
+}
+
 // ---------------
 // 조이스틱
 // ---------------
@@ -481,66 +496,89 @@ void joystickMovement() {
   short downward = joyDownward();
   unsigned long now = millis();
 
+  static byte heldDir = DIR_NONE;             // 지금 기울이고 있다고 보는 방향
   static unsigned long lastMove = 0;
-  static short lastYoffset = 0;
+  static unsigned long sideNeutralSince = 0;
+  static bool repeating = false;
+
   static bool downLocked = false;
+  static unsigned long downNeutralSince = 0;
+
   static bool hasClicked = false;
 
-  // left
-  if (leftward > JOY_DEADZONE && xOffset > 0 &&
-      (now - lastMove) > (MOVE_DELAY + (leftward > JOY_FULL ? 0 : MOVE_DELAY * 5))) {
-    if (canMove(true)) {
+  // ---------------
+  // 좌우
+  // ---------------
+  // 원본은 끝까지 기울이면 50ms 마다, 살짝 기울이면 300ms 마다 한 칸이었다.
+  // 앞쪽은 초당 20칸이라 한 칸만 옮기는게 사실상 불가능했고, 기울인 정도에
+  // 따라 속도가 6배나 달라져서 감을 잡기도 어려웠다.
+  // 그래서 기울인 정도와 무관하게,
+  //   - 새로 기울이면 즉시 한 칸
+  //   - 계속 기울이고 있으면 MOVE_FIRST_MS 뒤부터 MOVE_REPEAT_MS 간격
+  // 으로 바꿨다.
+  byte sideDir = DIR_NONE;
+
+  if (leftward > JOY_DEADZONE) {
+    sideDir = DIR_LEFT;
+  } else if (leftward < -JOY_DEADZONE) {
+    sideDir = DIR_RIGHT;
+  }
+
+  if (sideDir == DIR_NONE) {
+    // 판정 문턱 근처에서는 방향과 DIR_NONE 이 번갈아 읽힌다. 그 순간적인
+    // 떨림을 "손을 뗐다"로 인정하면 매번 "새로 기울였다"가 되어 대기시간을
+    // 건너뛰고 한 칸씩 계속 움직인다.
+    if (sideNeutralSince == 0) {
+      sideNeutralSince = now;
+    }
+
+    if (now - sideNeutralSince >= JOY_NEUTRAL_MS) {
+      heldDir = DIR_NONE;
+      repeating = false;
+    }
+  } else {
+    sideNeutralSince = 0;
+
+    if (sideDir != heldDir) {
+      // 새로 기울였다. 한 칸만 옮기고 자동 반복은 잠시 뒤부터.
+      heldDir = sideDir;
+      repeating = false;
+      moveSide(sideDir);
       lastMove = now;
-      xOffset--;
+    } else if (now - lastMove >= (repeating ? MOVE_REPEAT_MS : MOVE_FIRST_MS)) {
+      moveSide(sideDir);
+      lastMove = now;
+      repeating = true;
     }
   }
 
-  // right
-  if (leftward < -JOY_DEADZONE && xOffset < (BOARD_WIDTH - getShapeWidth()) &&
-      (now - lastMove) > (MOVE_DELAY + (leftward < -JOY_FULL ? 0 : MOVE_DELAY * 5))) {
-    if (canMove(false)) {
-      lastMove = now;
-      xOffset++;
-    }
-  }
-
-  // down (하드 드롭 - 바닥까지 한 번에)
+  // ---------------
+  // 아래 (하드 드롭)
+  // ---------------
+  // 잠금 조건이 원래는 "새 조각이 나오면(yOffset 이 줄어들면) 잠근다" 였는데,
+  // 조각이 나오자마자(yOffset == -4) 떨어뜨리면 다음 조각도 -4 에서 시작하므로
+  // yOffset < lastYoffset 이 성립하지 않는다. 그래서 잠기지 않았고, 아래로
+  // 기울이고 있는 동안 새 조각이 연달아 바닥에 꽂혔다.
   //
-  // 원래 코드는 여기가 세 군데 문제였다.
-  //
-  // 1) 문턱값이 JOY_FULL(250) 이었다. 좌/우는 JOY_DEADZONE(50) 을 쓰는데
-  //    아래만 조이스틱을 끝까지 밀어야 했고, 모듈에 따라 중립에서 250 만큼
-  //    내려가지 않는 경우가 있어 아예 반응이 없었다.
-  //
-  // 2) "새 조각이 나오면 이전 입력을 무시" 하는 검사가
-  //       if (yOffset < lastYoffset && abs(downward) > JOY_DEADZONE) return;
-  //       lastYoffset = yOffset;
-  //    순서라서, 한 번 걸리면 lastYoffset 이 갱신되지 못하고 낡은 값으로 굳었다.
-  //    그러면 조이스틱을 중립으로 되돌리기 전까지 계속 return 해서 아래는 물론
-  //    회전(아래쪽 click 처리)까지 통째로 막혔다.
-  //
-  // 3) 반응하더라도 stamp -= level 은 "한 칸" 내리는 것이라, DOWN_DELAY(150ms)
-  //    마다 한 칸씩 = 20칸짜리 판을 내려가는데 3초가 넘게 걸렸다. 눌러도
-  //    바닥에 꽂히지 않고 조금 빨라지기만 하는 것처럼 보였다.
-  //
-  // 그래서 아래로 기울이면 바닥까지 한 번에 내리고,
-  // "새 조각이 나왔으면 중립으로 한 번 돌아와야 다시 인정" 을 잠금 플래그로
-  // 따로 둔다. (이게 없으면 계속 기울이고 있을 때 새 조각마다 즉시 꽂혀서
-  //  손쓸 새도 없이 게임이 끝난다)
-  if (yOffset < lastYoffset) {
-    downLocked = true;
-  }
-
-  lastYoffset = yOffset;
-
+  // 조각 위치를 보고 판단할 게 아니라 그냥 "한 번 떨어뜨렸으면 잠근다".
+  // 중립으로 돌아와야 다음 하드 드롭이 인정된다.
   if (downward < JOY_DEADZONE) {
-    downLocked = false;
-  }
+    if (downNeutralSince == 0) {
+      downNeutralSince = now;
+    }
 
-  if (!downLocked && downward > JOY_DEADZONE && (now - lastDown) > DOWN_DELAY) {
-    lastDown = now;
-    hardDrop();
-    return;   // 조각이 바뀌었으니 이번 호출에서는 회전 처리를 건너뛴다
+    // 문턱 근처의 떨림으로 잠금이 풀리지 않게 중립이 이어져야 인정한다.
+    if (now - downNeutralSince >= JOY_NEUTRAL_MS) {
+      downLocked = false;
+    }
+  } else {
+    downNeutralSince = 0;
+
+    if (!downLocked) {
+      downLocked = true;
+      hardDrop();
+      return;   // 조각이 바뀌었으니 이번 호출에서는 회전 처리를 건너뛴다
+    }
   }
 
   // click (회전)
@@ -568,7 +606,6 @@ void playGame() {
   currentRotation = 0;
   yOffset = lastY = -4;
   xOffset = lastX = 0;
-  lastDown = 0;
   gameIsOver = false;
 
   memset(grid, 0, sizeof(grid));
