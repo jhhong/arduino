@@ -91,6 +91,9 @@ int16_t birdVel;              // 1/100 px per tick
 // 관
 int16_t pipeX, pipeGapY;
 
+// 잔디 줄무늬
+int16_t grassX;
+
 unsigned int score;
 
 // setAddrWindow + pushColor 로 픽셀 하나를 빠르게 찍는다.
@@ -111,6 +114,48 @@ void drawScore(unsigned int value, uint16_t color) {
   tft.setTextColor(color);
   tft.setCursor(TFTW2 - (int16_t)strlen(buf) * 6, 4);
   tft.print(buf);
+}
+
+// ---------------
+// 관 - 한 걸음(1px)치 그리기
+// ---------------
+// 관은 화면 전체를 다시 그리지 않는다. 걸음마다 "새로 드러난 앞쪽 두 칸"만
+// 칠하고 "뒤로 빠진 한 칸"만 지운다. 12px 폭의 관은 그 흔적이 쌓여서 보이는
+// 것이다. (앞 3칸은 밝은 테두리색, 나머지는 관 색으로 덮인다)
+//
+// 그래서 이 함수는 반드시 1px 이동마다 정확히 한 번씩 불려야 한다.
+// 한 번이라도 건너뛰면 그 칸은 지워지지 않은 채 화면에 그대로 남는다.
+void drawPipeStep() {
+  if (pipeX >= 0 && pipeX < TFTW) {
+    tft.drawFastVLine(pipeX + 3, 0, pipeGapY, PIPECOL);
+    tft.drawFastVLine(pipeX + 3, pipeGapY + GAPHEIGHT + 1,
+                      GAMEH - (pipeGapY + GAPHEIGHT + 1), PIPECOL);
+    tft.drawFastVLine(pipeX, 0, pipeGapY, PIPEHIGHCOL);
+    tft.drawFastVLine(pipeX, pipeGapY + GAPHEIGHT + 1,
+                      GAMEH - (pipeGapY + GAPHEIGHT + 1), PIPEHIGHCOL);
+
+    fastPixel(pipeX, pipeGapY, PIPESEAMCOL);
+    fastPixel(pipeX, pipeGapY + GAPHEIGHT, PIPESEAMCOL);
+    fastPixel(pipeX, pipeGapY - 6, PIPESEAMCOL);
+    fastPixel(pipeX, pipeGapY + GAPHEIGHT + 6, PIPESEAMCOL);
+    fastPixel(pipeX + 3, pipeGapY - 6, PIPESEAMCOL);
+    fastPixel(pipeX + 3, pipeGapY + GAPHEIGHT + 6, PIPESEAMCOL);
+  }
+
+  // 뒤로 빠진 칸 지우기
+  tft.drawFastVLine(pipeX + PIPEW, 0, GAMEH, BCKGRDCOL);
+}
+
+// 잔디 줄무늬도 같은 방식(걸음마다 한 칸씩)이라 함께 걸음 단위로 그린다.
+void drawGrassStep() {
+  grassX -= SPEED;
+
+  if (grassX < 0) {
+    grassX = TFTW;
+  }
+
+  tft.drawFastVLine(grassX % TFTW, GAMEH + 1, GRASSH - 1, GRASSCOL);
+  tft.drawFastVLine((grassX + 64) % TFTW, GAMEH + 1, GRASSH - 1, GRASSCOL2);
 }
 
 // 1/100 px 단위 속도를 정수 픽셀 이동량으로.
@@ -140,7 +185,11 @@ void gameInit() {
   birdVel = JUMP_VEL;
 
   pipeX = TFTW;
-  pipeGapY = random(20, TFTH - 60);
+  grassX = TFTW;
+
+  // 게임 중에 새로 세우는 관과 같은 범위를 쓴다. 원본은 여기만 범위가 넓어서
+  // 첫 관에서 이음매 점이 바닥(GAMEH) 아래에 찍히는 경우가 있었다.
+  pipeGapY = random(10, GAMEH - (10 + GAPHEIGHT));
 }
 
 // ---------------
@@ -154,13 +203,16 @@ void gameLoop() {
   tft.drawFastHLine(0, GAMEH + GRASSH, TFTW, COLOR_BLACK);
   tft.fillRect(0, GAMEH + GRASSH + 1, TFTW, FLOORH - GRASSH, FLOORCOL);
 
-  int16_t grassX = TFTW;
   unsigned long nextGameTick = millis();
   bool passedPipe = false;
 
   while (true) {
     byte loops = 0;
 
+    // 한 걸음(20ms)마다 상태를 갱신한다.
+    // 관과 잔디 그리기를 이 안에 두는 것이 중요하다. 둘 다 "걸음마다 한 칸"
+    // 방식이라, 아래 그리기 단계(프레임 단위)에 두면 한 프레임에 두 걸음
+    // 이상 진행됐을 때 지우지 못한 칸이 1px 세로줄로 화면에 영구히 남는다.
     while (millis() > nextGameTick && loops < MAX_FRAMESKIP) {
       // ===============
       // 입력
@@ -188,32 +240,18 @@ void gameLoop() {
         pipeGapY = random(10, GAMEH - (10 + GAPHEIGHT));
       }
 
+      drawPipeStep();
+      drawGrassStep();
+
       nextGameTick += SKIP_TICKS;
       loops++;
     }
 
-    // ===============
-    // 그리기 - 관
-    // ===============
-    if (pipeX >= 0 && pipeX < TFTW) {
-      tft.drawFastVLine(pipeX + 3, 0, pipeGapY, PIPECOL);
-      tft.drawFastVLine(pipeX + 3, pipeGapY + GAPHEIGHT + 1,
-                        GAMEH - (pipeGapY + GAPHEIGHT + 1), PIPECOL);
-      tft.drawFastVLine(pipeX, 0, pipeGapY, PIPEHIGHCOL);
-      tft.drawFastVLine(pipeX, pipeGapY + GAPHEIGHT + 1,
-                        GAMEH - (pipeGapY + GAPHEIGHT + 1), PIPEHIGHCOL);
-
-      fastPixel(pipeX, pipeGapY, PIPESEAMCOL);
-      fastPixel(pipeX, pipeGapY + GAPHEIGHT, PIPESEAMCOL);
-      fastPixel(pipeX, pipeGapY - 6, PIPESEAMCOL);
-      fastPixel(pipeX, pipeGapY + GAPHEIGHT + 6, PIPESEAMCOL);
-      fastPixel(pipeX + 3, pipeGapY - 6, PIPESEAMCOL);
-      fastPixel(pipeX + 3, pipeGapY + GAPHEIGHT + 6, PIPESEAMCOL);
-    }
-
-    // 관 뒤쪽 지우기
-    if (pipeX <= TFTW) {
-      tft.drawFastVLine(pipeX + PIPEW, 0, GAMEH, BCKGRDCOL);
+    // 한 걸음도 진행하지 않았으면 그릴 것도 없다.
+    // 이 검사가 없으면 같은 장면을 초당 100번 넘게 다시 그리느라 프레임이
+    // 길어지고, 그만큼 위 루프가 한 번에 여러 걸음을 돌게 된다.
+    if (loops == 0) {
+      continue;
     }
 
     // ===============
@@ -234,18 +272,6 @@ void gameLoop() {
     }
 
     birdOldY = birdY;
-
-    // ===============
-    // 그리기 - 잔디 줄무늬
-    // ===============
-    grassX -= SPEED;
-
-    if (grassX < 0) {
-      grassX = TFTW;
-    }
-
-    tft.drawFastVLine(grassX % TFTW, GAMEH + 1, GRASSH - 1, GRASSCOL);
-    tft.drawFastVLine((grassX + 64) % TFTW, GAMEH + 1, GRASSH - 1, GRASSCOL2);
 
     // ===============
     // 충돌
